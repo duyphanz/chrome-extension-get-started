@@ -1,0 +1,17 @@
+/* https://colorhunt.co/palette/212648 */
+.chrome-ex-dialog {
+  width: 90vw;
+  height: 90vh;
+  background-color: #f4f4f2;
+  border-radius: 4px;
+  display: none;
+
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.active {
+  display: block;
+}

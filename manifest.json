@@ -1,15 +1,21 @@
 {
-  "name": "Getting Started Example",
+  "name": "Bookmark note",
   "version": "1.0",
-  "description": "Build an Extension!",
-  "permissions": ["activeTab", "declarativeContent", "storage"],
+  "description": "Bookmark note!",
+  "permissions": [],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["contentScript.js"],
+      "css": ["style.css"]
+    }
+  ],
   "background": {
     "scripts": ["background.js"],
     "persistent": false
   },
-  "page_action": {
-    "default_popup": "popup.html"
+  "browser_action": {
+    "default_title": "Your bookmark note."
   },
-  "options_page": "options.html",
   "manifest_version": 2
 }
