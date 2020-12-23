@@ -2,7 +2,7 @@
   "name": "Bookmark note",
   "version": "1.0",
   "description": "Bookmark note!",
-  "permissions": [],
+  "permissions": ["bookmarks"],
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
