@@ -84,19 +84,16 @@ function onCreateLabel() {
     return;
   }
 
-  chrome.storage.sync.get(["colors"], function (result) {
-    const { colors } = result;
+  chrome.storage.sync.get(["app"], function (result) {
+    const {
+      app: { colors },
+    } = result;
     const newColors = [...colors, { l: name.value, c: color.value }];
-    chrome.storage.sync.set(
-      {
-        colors: newColors,
-      },
-      function () {
-        colorsContainer.textContent = "";
-        name.value = "";
-        drawColorItem(newColors);
-      }
-    );
+    chrome.storage.sync.set({ app: { colors: newColors } }, function () {
+      colorsContainer.textContent = "";
+      name.value = "";
+      drawColorItem(newColors);
+    });
   });
 }
 
@@ -128,6 +125,18 @@ function createBookmarkItem(items) {
 
   for (let item of items) {
     const wrapper = document.createElement("div");
+
+    const urlWrapper = document.createElement("div");
+    urlWrapper.setAttribute("class", "url-wrapper");
+
+    const labelWrapper = document.createElement("div");
+    labelWrapper.setAttribute("class", "label-wrapper");
+
+    const addLabelButton = document.createElement("button");
+    addLabelButton.setAttribute("class", "reset-button add-label-button");
+    addLabelButton.innerText = "+";
+    labelWrapper.appendChild(addLabelButton);
+
     const anchor = document.createElement("a");
     const favIcon = document.createElement("img");
 
@@ -139,8 +148,10 @@ function createBookmarkItem(items) {
     wrapper.setAttribute("class", "items-wrapper");
     favIcon.src = `http://www.google.com/s2/favicons?domain=${item.url}`;
 
-    wrapper.appendChild(favIcon);
-    wrapper.appendChild(anchor);
+    urlWrapper.appendChild(favIcon);
+    urlWrapper.appendChild(anchor);
+    wrapper.appendChild(urlWrapper);
+    wrapper.appendChild(labelWrapper);
     itemList.appendChild(wrapper);
   }
 }
@@ -157,7 +168,7 @@ function drawColorItem(colors) {
       chrome.storage.sync.get(["colors"], function (result) {
         const { colors } = result;
         const newColors = colors.filter((color) => {
-          return JSON.stringify(color) !== JSON.stringify({c, l});
+          return JSON.stringify(color) !== JSON.stringify({ c, l });
         });
         chrome.storage.sync.set(
           {
