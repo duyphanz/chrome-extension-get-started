@@ -148,8 +148,8 @@ header {
 
 .colors-container .color-item {
   min-width: 30px;
-  height: 30px;
-  line-height: 30px;
+  height: 20px;
+  line-height: 20px;
   margin-right: 15px;
   margin-bottom: 15px;
   padding: 5px 10px;
