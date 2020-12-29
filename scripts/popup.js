@@ -25,7 +25,6 @@ function createBookmarkTree(items) {
       historyDir.push(item);
 
       chrome.bookmarks.getChildren(item.id, function (result){
-        console.log("🚀 ~ file: popup.js ~ line 24 ~ result", result)
         const folders = result.filter(i => !i.url)
         const urls = result.filter(i => i.url)
 
@@ -42,20 +41,27 @@ function createBookmarkItem(items) {
   itemList.textContent = ''
 
   for(let item of items) {
+    const wrapper = document.createElement('div');
     const anchor = document.createElement('a');
+    const favIcon = document.createElement('img');
 
     anchor.href = item.url
     anchor.target = '_blank'
     anchor.setAttribute('class', 'item-url')
     anchor.innerText = item.title
 
-    itemList.appendChild(anchor)
+    wrapper.setAttribute('class', 'items-wrapper')
+    favIcon.src= `http://www.google.com/s2/favicons?domain=${item.url}`
+
+    wrapper.appendChild(favIcon)
+    wrapper.appendChild(anchor)
+    itemList.appendChild(wrapper)
   }
 }
 
 function onBack() {
   if(historyDir.length === 0) return;
-  
+
   const currentDir = historyDir.pop()
   const { title } = historyDir[historyDir.length - 1] || {};
   backButton.innerText = title ? title : 'Root'
