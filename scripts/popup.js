@@ -62,6 +62,7 @@ function onBack() {
 function onMoveToLabel() {
   toggleTab();
   backButton.innerHTML = "Back";
+  colorsContainer.textContent = '';
   chrome.storage.sync.get(["colors"], function (result) {
     if (result.colors && result.colors.length > 0) {
       drawColorItem(result.colors)
@@ -151,6 +152,11 @@ function drawColorItem(colors) {
     coloredItem.setAttribute("class", "color-item");
     coloredItem.innerText = l;
 
+    const removeBtn = document.createElement("button");
+    removeBtn.setAttribute("class", "reset-button remove-label-button");
+    removeBtn.innerText = 'x'
+
+    coloredItem.appendChild(removeBtn)
     colorsContainer.appendChild(coloredItem);
   });
 }

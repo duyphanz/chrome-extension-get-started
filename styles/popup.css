@@ -142,16 +142,34 @@ header {
 .colors-container {
   margin-top: 50px;
   display: flex;
+  flex-wrap: wrap;
 }
 
-.colors-container > .color-item {
+.colors-container .color-item {
   min-width: 30px;
   height: 30px;
   line-height: 30px;
-  margin-right: 5px;
+  margin-right: 15px;
+  margin-bottom: 5px;
   padding: 5px 10px;
   border-radius: 3px;
+  position: relative;
 
   color: white;
   text-align: center;
+}
+
+.remove-label-button {
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+
+  border-radius: 50%;
+  background-color: #bfbfbfab;
+  color: white;
+
+  position: absolute;
+  top: -10px;
+  right: -10px;
 }
