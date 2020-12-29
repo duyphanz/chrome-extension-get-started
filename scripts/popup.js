@@ -1,12 +1,20 @@
 // define variables
 const historyDir = [];
+let isLabelTab = false;
+
 const bmTree = document.querySelector('.bookmark-tree')
 const backButton = document.querySelector('.go-back-btn')
+const createLabelButton = document.querySelector('.create-lable-btn')
 const itemList = document.querySelector('.bookmark-items')
+const labelContainer = document.querySelector('.label-container')
+const bookmarkContainer = document.querySelector('.bookmark-container')
 
 // add Eventlistener
 backButton.addEventListener('click', onBack)
+createLabelButton.addEventListener('click', onMoveToLabel)
 
+// init DOMTree state
+labelContainer.setAttribute('class', 'hidden')
 
 // get init bookmark tree
 chrome.bookmarks.getTree(function (results) {
@@ -24,17 +32,55 @@ function createBookmarkTree(items) {
       backButton.innerText = item.title;
       historyDir.push(item);
 
-      chrome.bookmarks.getChildren(item.id, function (result){
-        const folders = result.filter(i => !i.url)
-        const urls = result.filter(i => i.url)
-
-        createBookmarkTree(folders, bmTree)
-        createBookmarkItem(urls)
-      })
+      drawBookmarkLayout(item.id)
+      
     }
     button.innerText = item.title;
     bmTree.appendChild(button)
   }
+}
+
+// handle DOM events
+function onBack() {
+  if(isLabelTab) {
+    toggleTab()
+    setCurrentBackButtonLabel()
+
+    return
+  }
+  if(historyDir.length === 0) return;
+
+  const currentDir = historyDir.pop()
+  setCurrentBackButtonLabel()
+  drawBookmarkLayout(currentDir.parentId)
+}
+
+function onMoveToLabel() {
+  toggleTab()
+  backButton.innerHTML = 'Back'
+}
+
+// utils
+function drawBookmarkLayout(currentItemID) {
+  chrome.bookmarks.getChildren(currentItemID, function (result){
+    const folders = result.filter(i => !i.url)
+    const urls = result.filter(i => i.url)
+
+    createBookmarkTree(folders)
+    createBookmarkItem(urls)
+  })
+}
+
+function setCurrentBackButtonLabel() {
+  const { title } = historyDir[historyDir.length - 1] || {};
+  backButton.innerText = title ? title : 'Root'
+}
+
+function toggleTab() {
+  labelContainer.classList.toggle('hidden')
+  bookmarkContainer.classList.toggle('hidden')
+  createLabelButton.classList.toggle('hidden')
+  isLabelTab = !isLabelTab
 }
 
 function createBookmarkItem(items) {
@@ -57,21 +103,4 @@ function createBookmarkItem(items) {
     wrapper.appendChild(anchor)
     itemList.appendChild(wrapper)
   }
-}
-
-function onBack() {
-  if(historyDir.length === 0) return;
-
-  const currentDir = historyDir.pop()
-  const { title } = historyDir[historyDir.length - 1] || {};
-  backButton.innerText = title ? title : 'Root'
-
-  chrome.bookmarks.getChildren(currentDir.parentId, function (result){
-    const folders = result.filter(i => !i.url)
-    const urls = result.filter(i => i.url)
-
-    createBookmarkTree(folders)
-    createBookmarkItem(urls)
-  })
-
 }
