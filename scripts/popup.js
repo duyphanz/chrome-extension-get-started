@@ -5,7 +5,10 @@ let isLabelTab = false;
 const bmTree = document.querySelector(".bookmark-tree");
 const backButton = document.querySelector(".go-back-btn");
 const createLabelButton = document.querySelector(".create-lable-btn");
+const submitLabelButton = document.querySelector(".create-lable-submit-button");
+
 const itemList = document.querySelector(".bookmark-items");
+
 const labelContainer = document.querySelector(".label-container");
 const bookmarkContainer = document.querySelector(".bookmark-container");
 const colorsContainer = document.querySelector(".colors-container");
@@ -13,19 +16,12 @@ const colorsContainer = document.querySelector(".colors-container");
 // add Eventlistener
 backButton.addEventListener("click", onBack);
 createLabelButton.addEventListener("click", onMoveToLabel);
+submitLabelButton.addEventListener("click", onCreateLabel);
 
 // init DOMTree state
 labelContainer.setAttribute("class", "hidden");
 
 // get init bookmark tree
-chrome.storage.sync.set({
-  colors: [
-    { l: "abc", c: "black" },
-    { l: "abc", c: "red" },
-    { l: "abc", c: "green" },
-  ],
-});
-
 chrome.bookmarks.getTree(function (results) {
   createBookmarkTree(results[0].children);
 });
@@ -67,17 +63,39 @@ function onMoveToLabel() {
   toggleTab();
   backButton.innerHTML = "Back";
   chrome.storage.sync.get(["colors"], function (result) {
-    console.log("Value currently is " + typeof result.colors);
     if (result.colors && result.colors.length > 0) {
-      result.colors.forEach(({l, c}) => {
-        const coloredItem = document.createElement("div");
-        coloredItem.setAttribute("style", `background-color: ${c}`);
-        coloredItem.setAttribute("class", "color-item");
-        coloredItem.innerText = l;
-
-        colorsContainer.appendChild(coloredItem);
-      });
+      drawColorItem(result.colors)
     }
+  });
+}
+
+function onCreateLabel() {
+  const name = document.querySelector("#label-name-input");
+  const color = document.querySelector("#color-input");
+
+  name.setAttribute("class", "");
+  name.addEventListener("blur", function () {
+    name.setAttribute("class", "");
+  });
+
+  if (!name.value) {
+    name.classList.toggle("red-outline");
+    return;
+  }
+
+  chrome.storage.sync.get(["colors"], function (result) {
+    const { colors } = result;
+    const newColors = [...colors, { l: name.value, c: color.value }]
+    chrome.storage.sync.set(
+      {
+        colors: newColors,
+      },
+      function () {
+        colorsContainer.textContent = '';
+        name.value = '';
+        drawColorItem(newColors)
+      }
+    );
   });
 }
 
@@ -124,4 +142,15 @@ function createBookmarkItem(items) {
     wrapper.appendChild(anchor);
     itemList.appendChild(wrapper);
   }
+}
+
+function drawColorItem(colors) {
+  colors.forEach(({ l, c }) => {
+    const coloredItem = document.createElement("div");
+    coloredItem.setAttribute("style", `background-color: ${c}`);
+    coloredItem.setAttribute("class", "color-item");
+    coloredItem.innerText = l;
+
+    colorsContainer.appendChild(coloredItem);
+  });
 }
