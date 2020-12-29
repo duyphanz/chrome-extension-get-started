@@ -1,26 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles/popup.css">
-</head>
-<body>
-  <header>
-    <button class="reset-button go-back-btn" >Root</button>
-    <div style="flex:1"></div>
-    <button class="reset-button create-lable-btn" >Create Label</button>
-  </header>
-  <main>
-    <section class="bookmark-container">
-      <div class="bookmark-tree"></div>
-      <div class="bookmark-items"></div>
-    </section>
-    <section class="label-container">
-      <h1>label</h1>
-    </section>
-  </main>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles/popup.css" />
+  </head>
+  <body>
+    <header>
+      <button class="reset-button go-back-btn">Root</button>
+      <div style="flex: 1"></div>
+      <button class="reset-button create-lable-btn">Create Label</button>
+    </header>
+    <main>
+      <section class="bookmark-container">
+        <div class="bookmark-tree"></div>
+        <div class="bookmark-items"></div>
+      </section>
+      <section class="label-container">
+        <div class="create-label-form">
+          <input type="text" placeholder="New label name" required />
+          <input type="color" value="#00e1ff" />
+        </div>
 
-  <script src="scripts/popup.js"></script>
-</body>
+        <button class="reset-button create-lable-submit-button">Create</button>
+        <div class="colors-container"></div>
+      </section>
+    </main>
+
+    <script src="scripts/popup.js"></script>
+  </body>
 </html>

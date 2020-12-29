@@ -3,7 +3,7 @@
   "name": "Bookmark note",
   "version": "1.0",
   "description": "Bookmark note!",
-  "permissions": ["bookmarks"],
+  "permissions": ["bookmarks", "storage"],
   "browser_action": {
     "default_title": "Your bookmark note.",
     "default_popup": "popup.html" 

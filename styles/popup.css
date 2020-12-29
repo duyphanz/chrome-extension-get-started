@@ -1,7 +1,7 @@
 * {
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
+  box-sizing: content-box;
 }
 
 main {
@@ -11,8 +11,9 @@ main {
 }
 
 header {
-  padding: 30px 30px 0;
+  padding: 30px;
   display: flex;
+  border-bottom: #eaeaea 1px solid;
 }
 
 .reset-button {
@@ -28,11 +29,11 @@ header {
 
 /* header */
 .go-back-btn:before {
-  content: '\2190\0020';
+  content: "\2190\0020";
 }
 
 .create-lable-btn:after {
-  content: ' \2192';
+  content: " \2192";
 }
 /* end header */
 
@@ -85,7 +86,7 @@ header {
 }
 
 .bookmark-items > .items-wrapper > a:after {
-  content: ' \2192';
+  content: " \2192";
 }
 
 .bookmark-items img {
@@ -94,3 +95,58 @@ header {
   margin-right: 10px;
 }
 /* end bookmark content */
+
+.create-lable-submit-button {
+  text-decoration: underline;
+  margin-left: 5px;
+}
+
+.create-label-form {
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.create-label-form > input[type="text"] {
+  font-size: 15px;
+  padding: 5px;
+  border: none;
+}
+
+.create-label-form > input[type="text"]:focus {
+  outline: 0;
+  border-bottom: black 1px solid;
+}
+
+.create-label-form > input[type="color"] {
+  -webkit-appearance: none;
+  border: none;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+}
+
+.create-label-form > input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.create-label-form > input[type="color"]::-webkit-color-swatch {
+  border: none;
+}
+
+.colors-container {
+  margin-top: 50px;
+  display: flex;
+}
+
+.colors-container > .color-item {
+  min-width: 30px;
+  height: 30px;
+  line-height: 30px;
+  margin-right: 5px;
+  padding: 5px;
+  border-radius: 3px;
+
+  color: white;
+  text-align: center;
+}
