@@ -62,10 +62,10 @@ function onBack() {
 function onMoveToLabel() {
   toggleTab();
   backButton.innerHTML = "Back";
-  colorsContainer.textContent = '';
+  colorsContainer.textContent = "";
   chrome.storage.sync.get(["colors"], function (result) {
     if (result.colors && result.colors.length > 0) {
-      drawColorItem(result.colors)
+      drawColorItem(result.colors);
     }
   });
 }
@@ -86,15 +86,15 @@ function onCreateLabel() {
 
   chrome.storage.sync.get(["colors"], function (result) {
     const { colors } = result;
-    const newColors = [...colors, { l: name.value, c: color.value }]
+    const newColors = [...colors, { l: name.value, c: color.value }];
     chrome.storage.sync.set(
       {
         colors: newColors,
       },
       function () {
-        colorsContainer.textContent = '';
-        name.value = '';
-        drawColorItem(newColors)
+        colorsContainer.textContent = "";
+        name.value = "";
+        drawColorItem(newColors);
       }
     );
   });
@@ -153,10 +153,27 @@ function drawColorItem(colors) {
     coloredItem.innerText = l;
 
     const removeBtn = document.createElement("button");
+    removeBtn.onclick = function () {
+      chrome.storage.sync.get(["colors"], function (result) {
+        const { colors } = result;
+        const newColors = colors.filter((color) => {
+          return JSON.stringify(color) !== JSON.stringify({c, l});
+        });
+        chrome.storage.sync.set(
+          {
+            colors: newColors,
+          },
+          function () {
+            colorsContainer.textContent = "";
+            drawColorItem(newColors);
+          }
+        );
+      });
+    };
     removeBtn.setAttribute("class", "reset-button remove-label-button");
-    removeBtn.innerText = 'x'
+    removeBtn.innerText = "x";
 
-    coloredItem.appendChild(removeBtn)
+    coloredItem.appendChild(removeBtn);
     colorsContainer.appendChild(coloredItem);
   });
 }
