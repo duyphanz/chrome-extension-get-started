@@ -96,9 +96,10 @@ function onCreateLabel() {
   chrome.storage.sync.get(["app"], function (result) {
     const {
       app: { colors },
+      app,
     } = result;
     const newColors = [...colors, { l: name.value, c: color.value }];
-    chrome.storage.sync.set({ app: { colors: newColors } }, function () {
+    chrome.storage.sync.set({ app: { ...app, colors: newColors } }, function () {
       colorsContainer.textContent = "";
       name.value = "";
       drawColorItem(newColors);
