@@ -184,10 +184,39 @@ header {
   margin-bottom: 20px;
 }
 
+.label-wrapper {
+  display: flex;
+  max-width: 100%;
+  overflow-x: scroll;
+  margin-bottom: 10px;
+}
+
+.label-wrapper::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.label-wrapper::-webkit-scrollbar-thumb {
+  background-color: transparent;
+}
+
+.label-wrapper .color-item {
+  min-width: 30px;
+  height: 20px;
+  line-height: 20px;
+  margin-right: 5px;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+
+  color: white;
+  text-align: center;
+}
+
 .add-label-button {
   color: white;
   width: 15px;
   height: 15px;
   background-color: #a5a5a5;
-  float: right;
+  align-self: flex-end;
 }

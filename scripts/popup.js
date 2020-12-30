@@ -139,15 +139,22 @@ function createBookmarkItem(items) {
     urlWrapper.setAttribute("class", "url-wrapper");
 
     const labelWrapper = document.createElement("div");
-    labelWrapper.setAttribute("class", "label-wrapper");
+    labelWrapper.setAttribute("class", `label-wrapper item-${item.id} hidden`);
 
     const addLabelButton = document.createElement("button");
     addLabelButton.setAttribute("class", "reset-button add-label-button");
     addLabelButton.innerText = "+";
     addLabelButton.onclick = function () {
-      console.log("abc");
+      const labelWraper = document.querySelector(`.label-wrapper.item-${item.id}`);
+      labelWraper.classList.toggle('hidden')
     };
-    labelWrapper.appendChild(addLabelButton);
+
+    chrome.storage.sync.get(["app"], function (result) {
+      const {
+        app: { colors },
+      } = result;
+      drawColorItem(colors, labelWrapper, item.url)
+    });
 
     const anchor = document.createElement("a");
     const favIcon = document.createElement("img");
@@ -164,15 +171,16 @@ function createBookmarkItem(items) {
     urlWrapper.appendChild(anchor);
     wrapper.appendChild(urlWrapper);
     wrapper.appendChild(labelWrapper);
+    wrapper.appendChild(addLabelButton);
     itemList.appendChild(wrapper);
   }
 }
 
-function drawColorItem(colors) {
+function drawColorItem(colors, container = colorsContainer, dataSet) {
   colors.forEach(({ l, c }) => {
     const coloredItem = document.createElement("div");
     coloredItem.setAttribute("style", `background-color: ${c}`);
-    coloredItem.setAttribute("class", "color-item");
+    coloredItem.setAttribute("class", `color-item data-set=${dataSet}`);
     coloredItem.innerText = l;
 
     const removeBtn = document.createElement("button");
@@ -199,6 +207,6 @@ function drawColorItem(colors) {
     removeBtn.innerText = "x";
 
     coloredItem.appendChild(removeBtn);
-    colorsContainer.appendChild(coloredItem);
+    container.appendChild(coloredItem);
   });
 }
