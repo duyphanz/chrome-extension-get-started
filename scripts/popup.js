@@ -23,8 +23,7 @@ labelContainer.setAttribute("class", "hidden");
 
 // init storage
 chrome.storage.sync.get(["app"], function (result) {
-  console.log("🚀 ~ file: popup.js ~ line 26 ~ result", result);
-  if (!result) {
+  if (Object.keys(result).length === 0) {
     chrome.storage.sync.set({ app: { colors: [], urls: {} } });
   }
 });
@@ -167,7 +166,7 @@ function createBookmarkItem(items) {
       } = result;
       const currentLabel = urls[item.url];
       drawColorItem(colors, labelWrapper, item, currentLabel);
-      
+
       if (currentLabel) {
         const currentlabel = document.querySelector(
           `.current-label.item-${item.id}`
@@ -203,6 +202,12 @@ function drawColorItem(
   item,
   currentLabel
 ) {
+  
+  if(colors.length === 0) {
+    container.innerText = 'None of labels'
+    return;
+  }
+
   colors.forEach(({ l, c }) => {
     const coloredItem = document.createElement("div");
     const isSelectedLabel =
