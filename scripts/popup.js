@@ -22,10 +22,14 @@ submitLabelButton.addEventListener("click", onCreateLabel);
 labelContainer.setAttribute("class", "hidden");
 
 // init storage
-chrome.storage.sync.set({ app: { colors: [] } });
+chrome.storage.sync.get(["app"], function (result) {
+  if(!result) {
+    chrome.storage.sync.set({ app: { colors: [] } });
+  }
+});
 
 // get init bookmark tree
-drawBookmarkLayout('0')
+drawBookmarkLayout("0");
 
 function createBookmarkTree(items) {
   bmTree.textContent = "";
@@ -64,9 +68,13 @@ function onMoveToLabel() {
   toggleTab();
   backButton.innerHTML = "Back";
   colorsContainer.textContent = "";
-  chrome.storage.sync.get(["colors"], function (result) {
-    if (result.colors && result.colors.length > 0) {
-      drawColorItem(result.colors);
+  chrome.storage.sync.get(["app"], function (result) {
+    const {
+      app: { colors },
+    } = result;
+
+    if (colors && colors.length > 0) {
+      drawColorItem(colors);
     }
   });
 }
@@ -136,6 +144,9 @@ function createBookmarkItem(items) {
     const addLabelButton = document.createElement("button");
     addLabelButton.setAttribute("class", "reset-button add-label-button");
     addLabelButton.innerText = "+";
+    addLabelButton.onclick = function () {
+      console.log("abc");
+    };
     labelWrapper.appendChild(addLabelButton);
 
     const anchor = document.createElement("a");
@@ -166,8 +177,10 @@ function drawColorItem(colors) {
 
     const removeBtn = document.createElement("button");
     removeBtn.onclick = function () {
-      chrome.storage.sync.get(["colors"], function (result) {
-        const { colors } = result;
+      chrome.storage.sync.get(["app"], function (result) {
+        const {
+          app: { colors },
+        } = result;
         const newColors = colors.filter((color) => {
           return JSON.stringify(color) !== JSON.stringify({ c, l });
         });
