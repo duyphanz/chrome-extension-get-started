@@ -21,10 +21,11 @@ submitLabelButton.addEventListener("click", onCreateLabel);
 // init DOMTree state
 labelContainer.setAttribute("class", "hidden");
 
+// init storage
+chrome.storage.sync.set({ app: { colors: [] } });
+
 // get init bookmark tree
-chrome.bookmarks.getTree(function (results) {
-  createBookmarkTree(results[0].children);
-});
+drawBookmarkLayout('0')
 
 function createBookmarkTree(items) {
   bmTree.textContent = "";

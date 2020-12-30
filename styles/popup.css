@@ -188,5 +188,6 @@ header {
   color: white;
   width: 15px;
   height: 15px;
-  background-color: #484848;
+  background-color: #a5a5a5;
+  float: right;
 }
