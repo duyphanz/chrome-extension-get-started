@@ -204,15 +204,12 @@ header {
   margin-bottom: 10px;
 }
 
-.label-wrapper {
-  padding-bottom: 6px;
-}
-
 .label-wrapper, .current-label {
   display: flex;
   max-width: 100%;
   overflow-x: scroll;
   margin-bottom: 10px;
+  padding-bottom: 6px;
 }
 
 .label-wrapper::-webkit-scrollbar {
