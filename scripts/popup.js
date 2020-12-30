@@ -23,8 +23,8 @@ labelContainer.setAttribute("class", "hidden");
 
 // init storage
 chrome.storage.sync.get(["app"], function (result) {
-  if(!result) {
-    chrome.storage.sync.set({ app: { colors: [] } });
+  if (!result) {
+    chrome.storage.sync.set({ app: { colors: [], urls: {} } });
   }
 });
 
@@ -129,8 +129,18 @@ function toggleTab() {
   isLabelTab = !isLabelTab;
 }
 
+function toggleCreatingLabel(itemId) {
+  const labelWraper = document.querySelector(`.label-wrapper.item-${itemId}`);
+  const currentlabel = document.querySelector(`.current-label.item-${itemId}`);
+  labelWraper.classList.toggle("hidden");
+  currentlabel.classList.toggle("hidden");
+}
+
 function createBookmarkItem(items) {
   itemList.textContent = "";
+  if(items.length === 0) {
+    itemList.innerText = 'Empty'
+  }
 
   for (let item of items) {
     const wrapper = document.createElement("div");
@@ -140,20 +150,29 @@ function createBookmarkItem(items) {
 
     const labelWrapper = document.createElement("div");
     labelWrapper.setAttribute("class", `label-wrapper item-${item.id} hidden`);
+    const currentLabelWrapper = document.createElement("div");
+    currentLabelWrapper.setAttribute("class", `current-label item-${item.id}`);
 
     const addLabelButton = document.createElement("button");
     addLabelButton.setAttribute("class", "reset-button add-label-button");
     addLabelButton.innerText = "+";
     addLabelButton.onclick = function () {
-      const labelWraper = document.querySelector(`.label-wrapper.item-${item.id}`);
-      labelWraper.classList.toggle('hidden')
+      toggleCreatingLabel(item.id);
     };
 
     chrome.storage.sync.get(["app"], function (result) {
       const {
-        app: { colors },
+        app: { colors, urls },
       } = result;
-      drawColorItem(colors, labelWrapper, item.url)
+      drawColorItem(colors, labelWrapper, item);
+
+      const currentLabel = urls[item.url];
+      if (currentLabel) {
+        const currentlabel = document.querySelector(
+          `.current-label.item-${item.id}`
+        );
+        drawColorItem([currentLabel], currentlabel);
+      }
     });
 
     const anchor = document.createElement("a");
@@ -171,30 +190,43 @@ function createBookmarkItem(items) {
     urlWrapper.appendChild(anchor);
     wrapper.appendChild(urlWrapper);
     wrapper.appendChild(labelWrapper);
+    wrapper.appendChild(currentLabelWrapper);
     wrapper.appendChild(addLabelButton);
     itemList.appendChild(wrapper);
   }
 }
 
-function drawColorItem(colors, container = colorsContainer, dataSet) {
+function drawColorItem(colors, container = colorsContainer, item) {
   colors.forEach(({ l, c }) => {
     const coloredItem = document.createElement("div");
     coloredItem.setAttribute("style", `background-color: ${c}`);
-    coloredItem.setAttribute("class", `color-item data-set=${dataSet}`);
+    coloredItem.setAttribute("class", `color-item`);
     coloredItem.innerText = l;
+    if (item) {
+      coloredItem.onclick = function () {
+        addLabelToURL(item.url, { l, c });
+        toggleCreatingLabel(item.id);
+
+        const currentlabel = document.querySelector(
+          `.current-label.item-${item.id}`
+        );
+        drawColorItem([{l ,c}], currentlabel);
+      };
+    }
 
     const removeBtn = document.createElement("button");
     removeBtn.onclick = function () {
       chrome.storage.sync.get(["app"], function (result) {
         const {
           app: { colors },
+          app,
         } = result;
         const newColors = colors.filter((color) => {
           return JSON.stringify(color) !== JSON.stringify({ c, l });
         });
         chrome.storage.sync.set(
           {
-            colors: newColors,
+            app: { ...app, colors: newColors },
           },
           function () {
             colorsContainer.textContent = "";
@@ -208,5 +240,24 @@ function drawColorItem(colors, container = colorsContainer, dataSet) {
 
     coloredItem.appendChild(removeBtn);
     container.appendChild(coloredItem);
+  });
+}
+
+function addLabelToURL(url, payload) {
+  chrome.storage.sync.get(["app"], function (result) {
+    const {
+      app: { urls },
+      app,
+    } = result;
+
+    const newUrls = { ...urls, [url]: payload };
+    chrome.storage.sync.set(
+      {
+        app: { ...app, urls: newUrls },
+      },
+      function () {
+        console.log("added label");
+      }
+    );
   });
 }

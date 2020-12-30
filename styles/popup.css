@@ -71,6 +71,9 @@ header {
   display: flex;
   flex-direction: column;
   overflow-y: scroll;
+
+  text-align: center;
+  color: #737373;
 }
 
 .bookmark-items > .items-wrapper {
@@ -102,6 +105,7 @@ header {
 .url-wrapper {
   display: flex;
   align-items: center;
+  text-align: left;
 }
 /* end bookmark content */
 
@@ -181,10 +185,10 @@ header {
 }
 
 .url-wrapper {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
-.label-wrapper {
+.label-wrapper, .current-label {
   display: flex;
   max-width: 100%;
   overflow-x: scroll;
@@ -200,7 +204,7 @@ header {
   background-color: transparent;
 }
 
-.label-wrapper .color-item {
+.label-wrapper .color-item, .current-label .color-item{
   min-width: 30px;
   height: 20px;
   line-height: 20px;
