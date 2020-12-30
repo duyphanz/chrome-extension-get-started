@@ -169,6 +169,22 @@ header {
   text-align: center;
 }
 
+.color-item.selected::before {
+  content: "\2713";
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  text-align: center;
+
+  border-radius: 50%;
+  background-color: #bfbfbfab;
+  color: white;
+
+  position: absolute;
+  bottom: -6px;
+  right: -10px;
+}
+
 .remove-label-button {
   width: 20px;
   height: 20px;
@@ -186,6 +202,10 @@ header {
 
 .url-wrapper {
   margin-bottom: 10px;
+}
+
+.label-wrapper {
+  padding-bottom: 6px;
 }
 
 .label-wrapper, .current-label {
@@ -208,13 +228,18 @@ header {
   min-width: 30px;
   height: 20px;
   line-height: 20px;
-  margin-right: 5px;
+  margin-right: 15px;
   padding: 5px 10px;
   border-radius: 3px;
   cursor: pointer;
+  position: relative;
 
   color: white;
   text-align: center;
+}
+
+.current-label > .color-item > button, .label-wrapper > .color-item > button {
+  display: none;
 }
 
 .add-label-button {

@@ -23,6 +23,7 @@ labelContainer.setAttribute("class", "hidden");
 
 // init storage
 chrome.storage.sync.get(["app"], function (result) {
+  console.log("🚀 ~ file: popup.js ~ line 26 ~ result", result);
   if (!result) {
     chrome.storage.sync.set({ app: { colors: [], urls: {} } });
   }
@@ -138,8 +139,8 @@ function toggleCreatingLabel(itemId) {
 
 function createBookmarkItem(items) {
   itemList.textContent = "";
-  if(items.length === 0) {
-    itemList.innerText = 'Empty'
+  if (items.length === 0) {
+    itemList.innerText = "Empty";
   }
 
   for (let item of items) {
@@ -164,9 +165,9 @@ function createBookmarkItem(items) {
       const {
         app: { colors, urls },
       } = result;
-      drawColorItem(colors, labelWrapper, item);
-
       const currentLabel = urls[item.url];
+      drawColorItem(colors, labelWrapper, item, currentLabel);
+      
       if (currentLabel) {
         const currentlabel = document.querySelector(
           `.current-label.item-${item.id}`
@@ -196,11 +197,21 @@ function createBookmarkItem(items) {
   }
 }
 
-function drawColorItem(colors, container = colorsContainer, item) {
+function drawColorItem(
+  colors,
+  container = colorsContainer,
+  item,
+  currentLabel
+) {
   colors.forEach(({ l, c }) => {
     const coloredItem = document.createElement("div");
+    const isSelectedLabel =
+      currentLabel && JSON.stringify(currentLabel) === JSON.stringify({ c, l })
+        ? "selected"
+        : "";
+
     coloredItem.setAttribute("style", `background-color: ${c}`);
-    coloredItem.setAttribute("class", `color-item`);
+    coloredItem.setAttribute("class", `color-item ${isSelectedLabel}`);
     coloredItem.innerText = l;
     if (item) {
       coloredItem.onclick = function () {
@@ -210,7 +221,8 @@ function drawColorItem(colors, container = colorsContainer, item) {
         const currentlabel = document.querySelector(
           `.current-label.item-${item.id}`
         );
-        drawColorItem([{l ,c}], currentlabel);
+        currentlabel.textContent = "";
+        drawColorItem([{ l, c }], currentlabel);
       };
     }
 
