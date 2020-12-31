@@ -183,16 +183,15 @@ header {
   display: flex;
   max-width: 100%;
   overflow-x: scroll;
-  margin-bottom: 10px;
   padding-bottom: 6px;
 }
 
-.label-wrapper::-webkit-scrollbar {
+.label-wrapper::-webkit-scrollbar, .bookmark-items::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
 
-.label-wrapper::-webkit-scrollbar-thumb {
+.label-wrapper::-webkit-scrollbar-thumb, .bookmark-items::-webkit-scrollbar-thumb {
   background-color: transparent;
 }
 
