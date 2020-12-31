@@ -294,6 +294,8 @@ function drawColorItem(
           function () {
             colorsContainer.textContent = "";
             drawColorItem(newColors);
+            const currentItemID = historyDir[historyDir.length - 1].id;
+            drawBookmarkLayout(currentItemID);
           }
         );
       });
