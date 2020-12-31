@@ -16,7 +16,11 @@
         <div class="bookmark-tree"></div>
         <div class="bookmark-items"></div>
       </section>
-      <section class="label-container">
+      <section class="label-container hidden">
+        <div class="label-container-header">
+          <span>Create a label</span>
+          <button class="label-container-closed-button reset-button">X</button>
+        </div>
         <div class="create-label-form">
           <input
             type="text"
@@ -28,12 +32,11 @@
           />
           <input type="color" value="#00e1ff" id="color-input" />
         </div>
-
         <button class="reset-button create-lable-submit-button">Create</button>
         <div class="colors-container"></div>
       </section>
     </main>
-
+    <footer><button class="create-label-button reset-button">+ Create Label</button></footer>
     <script src="scripts/popup.js"></script>
   </body>
 </html>

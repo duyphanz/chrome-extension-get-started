@@ -7,6 +7,8 @@ const bmTree = document.querySelector(".bookmark-tree");
 const backButton = document.querySelector(".go-back-btn");
 const createLabelButton = document.querySelector(".create-lable-btn");
 const submitLabelButton = document.querySelector(".create-lable-submit-button");
+const displayCreateLabelModal = document.querySelector(".create-label-button");
+const closeCreateLabelModal = document.querySelector(".label-container-closed-button");
 
 const itemList = document.querySelector(".bookmark-items");
 
@@ -18,9 +20,14 @@ const colorsContainer = document.querySelector(".colors-container");
 backButton.addEventListener("click", onBack);
 createLabelButton.addEventListener("click", onMoveToLabel);
 submitLabelButton.addEventListener("click", onCreateLabel);
+displayCreateLabelModal.addEventListener("click", () =>
+  labelContainer.classList.toggle("hidden")
+);
+closeCreateLabelModal.addEventListener("click", () =>
+  labelContainer.classList.toggle("hidden")
+);
 
 // init DOMTree state
-labelContainer.setAttribute("class", "hidden");
 
 // init storage
 chrome.storage.sync.get(["app"], function (result) {
