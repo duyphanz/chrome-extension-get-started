@@ -1,6 +1,7 @@
 // define variables
 const historyDir = [];
 let isLabelTab = false;
+let isSelectingLabel = false;
 
 const bmTree = document.querySelector(".bookmark-tree");
 const backButton = document.querySelector(".go-back-btn");
@@ -99,11 +100,17 @@ function onCreateLabel() {
       app,
     } = result;
     const newColors = [...colors, { l: name.value, c: color.value }];
-    chrome.storage.sync.set({ app: { ...app, colors: newColors } }, function () {
-      colorsContainer.textContent = "";
-      name.value = "";
-      drawColorItem(newColors);
-    });
+    chrome.storage.sync.set(
+      { app: { ...app, colors: newColors } },
+      function () {
+        colorsContainer.textContent = "";
+        name.value = "";
+        drawColorItem(newColors);
+
+        const currentItemID = historyDir[historyDir.length - 1].id;
+        drawBookmarkLayout(currentItemID);
+      }
+    );
   });
 }
 
@@ -133,8 +140,21 @@ function toggleTab() {
 function toggleCreatingLabel(itemId) {
   const labelWraper = document.querySelector(`.label-wrapper.item-${itemId}`);
   const currentlabel = document.querySelector(`.current-label.item-${itemId}`);
+  const captionText = document.querySelector(`.caption-text.item-${itemId}`);
+  const addLabelButton = document.querySelector(
+    `.add-label-button.item-${itemId}`
+  );
   labelWraper.classList.toggle("hidden");
   currentlabel.classList.toggle("hidden");
+  captionText.classList.toggle("visibility");
+
+  if (isSelectingLabel) {
+    addLabelButton.innerText = "+";
+  } else {
+    addLabelButton.innerText = "x";
+  }
+
+  isSelectingLabel = !isSelectingLabel;
 }
 
 function createBookmarkItem(items) {
@@ -155,11 +175,25 @@ function createBookmarkItem(items) {
     currentLabelWrapper.setAttribute("class", `current-label item-${item.id}`);
 
     const addLabelButton = document.createElement("button");
-    addLabelButton.setAttribute("class", "reset-button add-label-button");
+    addLabelButton.setAttribute(
+      "class",
+      `reset-button add-label-button item-${item.id}`
+    );
     addLabelButton.innerText = "+";
     addLabelButton.onclick = function () {
       toggleCreatingLabel(item.id);
     };
+
+    const controlWrapper = document.createElement("div");
+    controlWrapper.setAttribute("class", `control-wrapper item-${item.id}`);
+    const captionText = document.createElement("div");
+    captionText.setAttribute(
+      "class",
+      `caption-text item-${item.id} visibility`
+    );
+    captionText.innerText = "Click to select/remove the label";
+    controlWrapper.appendChild(captionText);
+    controlWrapper.appendChild(addLabelButton);
 
     chrome.storage.sync.get(["app"], function (result) {
       const {
@@ -192,7 +226,7 @@ function createBookmarkItem(items) {
     wrapper.appendChild(urlWrapper);
     wrapper.appendChild(labelWrapper);
     wrapper.appendChild(currentLabelWrapper);
-    wrapper.appendChild(addLabelButton);
+    wrapper.appendChild(controlWrapper);
     itemList.appendChild(wrapper);
   }
 }
@@ -203,9 +237,8 @@ function drawColorItem(
   item,
   currentLabel
 ) {
-  
-  if(colors.length === 0) {
-    container.innerText = 'None of labels'
+  if (colors.length === 0) {
+    container.innerText = "None of labels";
     return;
   }
 
@@ -263,18 +296,26 @@ function drawColorItem(
 
 function addLabelToURL(url, payload) {
   chrome.storage.sync.get(["app"], function (result) {
-    const {
+    let {
       app: { urls },
       app,
     } = result;
 
-    const newUrls = { ...urls, [url]: payload };
+    // remove label
+    const { l, c } = urls[url] || {};
+    if (l === payload.l && c === payload.c) {
+      delete urls[url];
+    } else {
+      urls = { ...urls, [url]: payload };
+    }
+
     chrome.storage.sync.set(
       {
-        app: { ...app, urls: newUrls },
+        app: { ...app, urls },
       },
       function () {
-        console.log("added label");
+        const currentItemID = historyDir[historyDir.length - 1].id;
+        drawBookmarkLayout(currentItemID);
       }
     );
   });

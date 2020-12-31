@@ -27,6 +27,10 @@ header {
   display: none !important;
 }
 
+.visibility {
+  visibility: hidden;
+}
+
 .red-outline {
   outline: red solid 1px;
 }
@@ -155,40 +159,10 @@ header {
   flex-wrap: wrap;
 }
 
-.colors-container .color-item {
-  min-width: 30px;
-  height: 20px;
-  line-height: 20px;
-  margin-right: 15px;
-  margin-bottom: 15px;
-  padding: 5px 10px;
-  border-radius: 3px;
-  position: relative;
-
-  color: white;
-  text-align: center;
-}
-
-.color-item.selected::before {
-  content: "\2713";
-  width: 20px;
-  height: 20px;
-  line-height: 20px;
-  text-align: center;
-
-  border-radius: 50%;
-  background-color: #bfbfbfab;
-  color: white;
-
-  position: absolute;
-  bottom: -6px;
-  right: -10px;
-}
-
 .remove-label-button {
-  width: 20px;
-  height: 20px;
-  line-height: 20px;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
   text-align: center;
 
   border-radius: 50%;
@@ -196,15 +170,16 @@ header {
   color: white;
 
   position: absolute;
-  top: -10px;
-  right: -10px;
+  top: -8px;
+  right: -8px;
 }
 
 .url-wrapper {
   margin-bottom: 10px;
 }
 
-.label-wrapper, .current-label {
+.label-wrapper,
+.current-label {
   display: flex;
   max-width: 100%;
   overflow-x: scroll;
@@ -221,12 +196,13 @@ header {
   background-color: transparent;
 }
 
-.label-wrapper .color-item, .current-label .color-item{
-  min-width: 30px;
-  height: 20px;
+.colors-container .color-item,
+.label-wrapper .color-item,
+.current-label .color-item {
+  min-height: 20px;
   line-height: 20px;
-  margin-right: 15px;
-  padding: 5px 10px;
+  margin-right: 10px;
+  padding: 0 10px;
   border-radius: 3px;
   cursor: pointer;
   position: relative;
@@ -235,7 +211,25 @@ header {
   text-align: center;
 }
 
-.current-label > .color-item > button, .label-wrapper > .color-item > button {
+.color-item.selected::before {
+  content: "\2713";
+  font-size: 10px;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+
+  border-radius: 50%;
+  background-color: #bfbfbfab;
+  color: white;
+
+  position: absolute;
+  bottom: -5px;
+  right: -8px;
+}
+
+.current-label > .color-item > button,
+.label-wrapper > .color-item > button {
   display: none;
 }
 
@@ -245,4 +239,12 @@ header {
   height: 15px;
   background-color: #a5a5a5;
   align-self: flex-end;
+}
+
+.control-wrapper {
+  display: flex;
+}
+
+.control-wrapper .caption-text {
+  flex: 1;
 }
