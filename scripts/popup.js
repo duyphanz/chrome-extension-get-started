@@ -1,11 +1,11 @@
 // define variables
 const historyDir = [];
-let isLabelTab = false;
+let isBoardTab = false;
 let isSelectingLabel = false;
 
 const bmTree = document.querySelector(".bookmark-tree");
 const backButton = document.querySelector(".go-back-btn");
-const createLabelButton = document.querySelector(".create-lable-btn");
+const goToBoardButton = document.querySelector(".go-to-board-btn");
 const submitLabelButton = document.querySelector(".create-lable-submit-button");
 const displayCreateLabelModal = document.querySelector(".create-label-button");
 const closeCreateLabelModal = document.querySelector(
@@ -17,10 +17,11 @@ const itemList = document.querySelector(".bookmark-items");
 const labelContainer = document.querySelector(".label-container");
 const bookmarkContainer = document.querySelector(".bookmark-container");
 const colorsContainer = document.querySelector(".colors-container");
+const boardContainer = document.querySelector(".board-container");
 
 // add Eventlistener
 backButton.addEventListener("click", onBack);
-createLabelButton.addEventListener("click", onMoveToLabel);
+goToBoardButton.addEventListener("click", onMoveToBoard);
 submitLabelButton.addEventListener("click", onCreateLabel);
 displayCreateLabelModal.addEventListener("click", () =>
   labelContainer.classList.toggle("hidden")
@@ -43,9 +44,7 @@ chrome.storage.sync.get(["app"], function (result) {
   } = result;
 
   // set init labels
-  if (colors && colors.length > 0) {
-    drawColorItem(colors);
-  }
+  drawColorItem(colors);
 });
 
 // get init bookmark tree
@@ -71,7 +70,7 @@ function createBookmarkTree(items) {
 
 // handle DOM events
 function onBack() {
-  if (isLabelTab) {
+  if (isBoardTab) {
     toggleTab();
     setCurrentBackButtonLabel();
 
@@ -84,7 +83,7 @@ function onBack() {
   drawBookmarkLayout(currentDir.parentId);
 }
 
-function onMoveToLabel() {
+function onMoveToBoard() {
   toggleTab();
   backButton.innerHTML = "Back";
 }
@@ -140,10 +139,10 @@ function setCurrentBackButtonLabel() {
 }
 
 function toggleTab() {
-  labelContainer.classList.toggle("hidden");
   bookmarkContainer.classList.toggle("hidden");
-  createLabelButton.classList.toggle("hidden");
-  isLabelTab = !isLabelTab;
+  boardContainer.classList.toggle("hidden");
+  goToBoardButton.classList.toggle("hidden");
+  isBoardTab = !isBoardTab;
 }
 
 function toggleCreatingLabel(itemId) {
@@ -246,8 +245,12 @@ function drawColorItem(
   item,
   currentLabel
 ) {
+
   if (colors.length === 0) {
-    container.innerText = "None of labels";
+    const noneLabel = document.createElement("div");
+    noneLabel.innerText = "None of labels";
+    noneLabel.setAttribute("style", "text-align:center;width:100%");
+    container.appendChild(noneLabel);
     return;
   }
 
