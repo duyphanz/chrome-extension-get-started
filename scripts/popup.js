@@ -8,7 +8,9 @@ const backButton = document.querySelector(".go-back-btn");
 const createLabelButton = document.querySelector(".create-lable-btn");
 const submitLabelButton = document.querySelector(".create-lable-submit-button");
 const displayCreateLabelModal = document.querySelector(".create-label-button");
-const closeCreateLabelModal = document.querySelector(".label-container-closed-button");
+const closeCreateLabelModal = document.querySelector(
+  ".label-container-closed-button"
+);
 
 const itemList = document.querySelector(".bookmark-items");
 
@@ -33,6 +35,16 @@ closeCreateLabelModal.addEventListener("click", () =>
 chrome.storage.sync.get(["app"], function (result) {
   if (Object.keys(result).length === 0) {
     chrome.storage.sync.set({ app: { colors: [], urls: {} } });
+    return;
+  }
+
+  const {
+    app: { colors },
+  } = result;
+
+  // set init labels
+  if (colors && colors.length > 0) {
+    drawColorItem(colors);
   }
 });
 
@@ -75,16 +87,6 @@ function onBack() {
 function onMoveToLabel() {
   toggleTab();
   backButton.innerHTML = "Back";
-  colorsContainer.textContent = "";
-  chrome.storage.sync.get(["app"], function (result) {
-    const {
-      app: { colors },
-    } = result;
-
-    if (colors && colors.length > 0) {
-      drawColorItem(colors);
-    }
-  });
 }
 
 function onCreateLabel() {

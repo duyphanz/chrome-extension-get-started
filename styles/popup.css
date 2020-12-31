@@ -134,7 +134,7 @@ footer {
 
 .create-label-form > input[type="text"] {
   font-size: 15px;
-  padding: 5px;
+  padding: 5px 5px 5px 0;
   border: none;
   border-bottom: transparent 1px solid;
   margin-right: 10px;
@@ -293,4 +293,8 @@ footer {
   left: 50%;
   transform: translate(-50%, -50%);
   box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+}
+
+.label-container-closed-button {
+  font-size: 11px;
 }
