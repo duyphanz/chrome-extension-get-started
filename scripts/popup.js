@@ -18,6 +18,7 @@ const labelContainer = document.querySelector(".label-container");
 const bookmarkContainer = document.querySelector(".bookmark-container");
 const colorsContainer = document.querySelector(".colors-container");
 const quickAddLabels = document.querySelector(".quick-add-labels");
+const quickAddLabel = document.querySelector(".quick-add-label");
 const boardContainer = document.querySelector(".board-container");
 const boardContent = document.querySelector(".board-container-content");
 const boardContainerAllLabels = document.querySelector(
@@ -48,12 +49,12 @@ chrome.storage.sync.get(["app"], function (result) {
   }
 
   const {
-    app: { labels },
+    app: { labels, urls },
   } = result;
 
+  drawQuickAdd();
   // set init labels
   drawColorItem(labels);
-  drawColorItem(labels, quickAddLabels);
 });
 
 // get init bookmark tree
@@ -128,6 +129,32 @@ function onCreateLabel() {
       const { id } = historyDir[historyDir.length - 1] || {};
       drawBookmarkLayout(id);
       drawBoard();
+    });
+  });
+}
+
+function drawQuickAdd() {
+  chrome.storage.sync.get(["app"], function (result) {
+    const {
+      app: { labels, urls },
+    } = result;
+
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      const { url, title } = tabs[0];
+
+      const onQuickAdd = (labelName) => {
+        // TODO: get dir of quick add
+        addLabelToURL({ title, url, dir: "Quick Add" }, labelName);
+        quickAddLabel.classList.toggle("visibility");
+      };
+      // TODO: check bookmarked but none of label
+      if (!urls[url]) {
+        drawColorItem(labels, quickAddLabels, undefined, undefined, onQuickAdd);
+        quickAddLabel.classList.toggle("visibility");
+
+        const urlTitle = document.querySelector(".quick-add-label-url");
+        urlTitle.innerText = title;
+      }
     });
   });
 }
@@ -366,7 +393,7 @@ function drawColorItem(
             `.current-label.item-${item.id}`
           );
           currentlabel.textContent = "";
-          drawColorItem({ labelName }, currentlabel);
+          drawColorItem({ [labelName]: labelName }, currentlabel);
         };
       }
     }
@@ -408,22 +435,30 @@ function addLabelToURL(item, labelName) {
       app,
     } = result;
 
+    let updatedLabel = {};
     // remove label
     const label = urls[item.url];
     if (label === labelName) {
       delete urls[item.url];
+      updatedLabel = {
+        ...labels,
+        [labelName]: labels[labelName].filter((l) => l.url !== item.url),
+      };
     } else {
       urls = { ...urls, [item.url]: labelName };
+      const currentDir = historyDir[historyDir.length - 1];
+      updatedLabel = {
+        ...labels,
+        [labelName]: [
+          ...labels[labelName],
+          {
+            title: item.title,
+            url: item.url,
+            dir: item.dir ? item.dir : currentDir.title,
+          },
+        ],
+      };
     }
-
-    const currentDir = historyDir[historyDir.length - 1];
-    const updatedLabel = {
-      ...labels,
-      [labelName]: [
-        ...labels[labelName],
-        { title: item.title, url: item.url, dir: currentDir.title },
-      ],
-    };
 
     chrome.storage.sync.set(
       {
