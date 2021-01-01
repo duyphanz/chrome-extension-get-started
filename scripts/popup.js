@@ -17,7 +17,12 @@ const itemList = document.querySelector(".bookmark-items");
 const labelContainer = document.querySelector(".label-container");
 const bookmarkContainer = document.querySelector(".bookmark-container");
 const colorsContainer = document.querySelector(".colors-container");
+const quickAddLabels = document.querySelector(".quick-add-labels");
 const boardContainer = document.querySelector(".board-container");
+const boardContent = document.querySelector(".board-container-content");
+const boardContainerAllLabels = document.querySelector(
+  ".board-container-all-labels"
+);
 
 // add Eventlistener
 backButton.addEventListener("click", onBack);
@@ -34,8 +39,11 @@ closeCreateLabelModal.addEventListener("click", () =>
 
 // init storage
 chrome.storage.sync.get(["app"], function (result) {
+  console.log("🚀 ~ file: popup.js ~ line 41 ~ result", result);
   if (Object.keys(result).length === 0) {
-    chrome.storage.sync.set({ app: { labels: {}, urls: {} } });
+    chrome.storage.sync.set({
+      app: { labels: {}, urls: {}, boardSelectedLabels: [] },
+    });
     return;
   }
 
@@ -45,6 +53,7 @@ chrome.storage.sync.get(["app"], function (result) {
 
   // set init labels
   drawColorItem(labels);
+  drawColorItem(labels, quickAddLabels);
 });
 
 // get init bookmark tree
@@ -118,22 +127,50 @@ function onCreateLabel() {
 
       const { id } = historyDir[historyDir.length - 1] || {};
       drawBookmarkLayout(id);
-      drawBoard()
+      drawBoard();
     });
   });
 }
 
 function drawBoard() {
-  boardContainer.textContent = "";
+  boardContainerAllLabels.textContent = "";
+  boardContent.textContent = "";
 
   chrome.storage.sync.get(["app"], function (result) {
-    const {
-      app: { labels },
+    let {
+      app: { labels, boardSelectedLabels },
+      app,
     } = result;
 
-    const labelNames = Object.keys(labels);
+    if (boardSelectedLabels.length === 0)
+      boardContent.innerText =
+        "Empty board! Let's create some labels and click on the new created label to custom your board.";
 
-    labelNames.forEach((label) => {
+    const onSelectLabel = (label) => {
+      if (boardSelectedLabels.includes(label)) {
+        boardSelectedLabels = boardSelectedLabels.filter((l) => l !== label);
+      } else {
+        boardSelectedLabels.push(label);
+      }
+      chrome.storage.sync.set(
+        {
+          app: { ...app, labels, boardSelectedLabels },
+        },
+        function () {
+          drawBoard();
+        }
+      );
+    };
+
+    drawColorItem(
+      labels,
+      boardContainerAllLabels,
+      undefined,
+      boardSelectedLabels,
+      onSelectLabel
+    );
+
+    boardSelectedLabels.forEach((label) => {
       const labelWrapper = document.createElement("div");
       labelWrapper.setAttribute("class", `label-col item-${label}`);
 
@@ -159,13 +196,13 @@ function drawBoard() {
 
         labelURLWrapper.appendChild(urlItem);
       });
-      boardContainer.appendChild(labelWrapper);
+      boardContent.appendChild(labelWrapper);
     });
   });
 }
 
 function drawBookmarkLayout(currentItemID) {
-  if(!currentItemID) return;
+  if (!currentItemID) return;
 
   chrome.bookmarks.getChildren(currentItemID, function (result) {
     const folders = result.filter((i) => !i.url);
@@ -286,7 +323,8 @@ function drawColorItem(
   labels,
   container = colorsContainer,
   item,
-  currentLabel
+  currentLabel = {},
+  onItemClick
 ) {
   const labelNames = Object.keys(labels);
 
@@ -301,24 +339,36 @@ function drawColorItem(
   labelNames.forEach((labelName) => {
     const [l, c] = destructuringLabelName(labelName);
     const coloredItem = document.createElement("div");
-    const isSelectedLabel =
-      currentLabel && currentLabel === labelName ? "selected" : "";
+    let isSelectedLabel = false;
+
+    if (currentLabel.length) {
+      isSelectedLabel = currentLabel.includes(labelName) ? "selected" : "";
+    } else {
+      isSelectedLabel =
+        currentLabel && currentLabel === labelName ? "selected" : "";
+    }
 
     coloredItem.setAttribute("style", `background-color: ${c}`);
     coloredItem.setAttribute("class", `color-item ${isSelectedLabel}`);
     coloredItem.innerText = l;
 
-    if (item) {
-      coloredItem.onclick = function () {
-        addLabelToURL(item, labelName);
-        toggleCreatingLabel(item.id);
-
-        const currentlabel = document.querySelector(
-          `.current-label.item-${item.id}`
-        );
-        currentlabel.textContent = "";
-        drawColorItem({ labelName }, currentlabel);
+    if (onItemClick) {
+      coloredItem.onclick = () => {
+        onItemClick(labelName);
       };
+    } else {
+      if (item) {
+        coloredItem.onclick = function () {
+          addLabelToURL(item, labelName);
+          toggleCreatingLabel(item.id);
+
+          const currentlabel = document.querySelector(
+            `.current-label.item-${item.id}`
+          );
+          currentlabel.textContent = "";
+          drawColorItem({ labelName }, currentlabel);
+        };
+      }
     }
 
     const removeBtn = document.createElement("button");

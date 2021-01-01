@@ -17,7 +17,10 @@
         <div class="bookmark-items"></div>
       </section>
       <section class="board-container hidden">
-        This is board
+        <div class="board-container-content">
+          Empty board! Let's create some labels.
+        </div>
+        <div class="board-container-all-labels"></div>
       </section>
       <section class="label-container hidden">
         <div class="label-container-header">
@@ -39,7 +42,14 @@
         <div class="colors-container"></div>
       </section>
     </main>
-    <footer><button class="create-label-button reset-button">+ Create Label</button></footer>
+    <footer>
+      <button class="create-label-button reset-button">+ Create Label</button>
+      <div class="quick-add-label">
+        <span>Quick add label to your current bookmark: </span>
+        <strong><span class="quick-add-label-url">google.com</span></strong>
+        <div class="quick-add-labels"></div>
+      </div>
+    </footer>
     <script src="scripts/popup.js"></script>
   </body>
 </html>
