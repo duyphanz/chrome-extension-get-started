@@ -11,6 +11,9 @@ const displayCreateLabelModal = document.querySelector(".create-label-button");
 const closeCreateLabelModal = document.querySelector(
   ".label-container-closed-button"
 );
+const closeQuickAddLabel = document.querySelector(
+  ".quick-add-label-close-button"
+);
 
 const itemList = document.querySelector(".bookmark-items");
 
@@ -34,6 +37,9 @@ displayCreateLabelModal.addEventListener("click", () =>
 );
 closeCreateLabelModal.addEventListener("click", () =>
   labelContainer.classList.toggle("hidden")
+);
+closeQuickAddLabel.addEventListener("click", () =>
+quickAddLabel.classList.toggle("visibility")
 );
 
 // init DOMTree state
@@ -142,19 +148,34 @@ function drawQuickAdd() {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const { url, title } = tabs[0];
 
-      const onQuickAdd = (labelName) => {
-        // TODO: get dir of quick add
-        addLabelToURL({ title, url, dir: "Quick Add" }, labelName);
-        quickAddLabel.classList.toggle("visibility");
-      };
-      // TODO: check bookmarked but none of label
-      if (!urls[url]) {
-        drawColorItem(labels, quickAddLabels, undefined, undefined, onQuickAdd);
-        quickAddLabel.classList.toggle("visibility");
+      function onFulfilled(bookmarkItems) {
+        if (bookmarkItems.length) {
+          const { parentId } = bookmarkItems[0];
+          function onQuickAdd(labelName) {
+            chrome.bookmarks.get(parentId, function (result) {
+              const { title: dir } = result[0];
+              addLabelToURL({ title, url, dir }, labelName);
+              quickAddLabel.classList.toggle("visibility");
+            });
+          }
 
-        const urlTitle = document.querySelector(".quick-add-label-url");
-        urlTitle.innerText = title;
+          if (!urls[url]) {
+            drawColorItem(
+              labels,
+              quickAddLabels,
+              undefined,
+              undefined,
+              onQuickAdd
+            );
+            quickAddLabel.classList.toggle("visibility");
+            const urlTitle = document.querySelector(".quick-add-label-url");
+            urlTitle.innerText = title;
+          }
+        } else {
+          console.log("active tab is not bookmarked");
+        }
       }
+      chrome.bookmarks.search({ query: url }, onFulfilled);
     });
   });
 }
@@ -436,6 +457,7 @@ function addLabelToURL(item, labelName) {
     } = result;
 
     let updatedLabel = {};
+    const currentDir = historyDir[historyDir.length - 1] || {};
     // remove label
     const label = urls[item.url];
     if (label === labelName) {
@@ -446,7 +468,6 @@ function addLabelToURL(item, labelName) {
       };
     } else {
       urls = { ...urls, [item.url]: labelName };
-      const currentDir = historyDir[historyDir.length - 1];
       updatedLabel = {
         ...labels,
         [labelName]: [
@@ -465,7 +486,7 @@ function addLabelToURL(item, labelName) {
         app: { ...app, urls, labels: updatedLabel },
       },
       function () {
-        const currentItemID = currentDir.id;
+        const currentItemID = currentDir.id || '0';
         drawBookmarkLayout(currentItemID);
       }
     );
