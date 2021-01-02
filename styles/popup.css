@@ -7,8 +7,9 @@
 main {
   width: 600px;
   height: 400px;
-  padding: 30px;
+  padding: 30px 30px 15px;
   position: relative;
+  background-color: #efefef61;
 }
 
 header {
@@ -48,7 +49,9 @@ header {
 
 /* footer */
 footer {
-  padding: 20px 30px;
+  padding: 10px 30px;
+  display: flex;
+  justify-content: space-between;
 }
 /* end footer */
 
@@ -92,6 +95,7 @@ footer {
   padding: 10px;
   border-radius: 5px;
   margin-bottom: 10px;
+  background-color: white;
 
   display: flex;
   flex-direction: column;
@@ -165,6 +169,7 @@ footer {
   width: 400px;
   height: 300px;
   background-color: white;
+  padding-bottom: 10px;
 
   position: absolute;
   top: 50%;
@@ -189,9 +194,11 @@ footer {
   margin-top: 50px;
   display: flex;
   flex-wrap: wrap;
-  padding: 0 10px;
+  padding: 10px;
   color: #9e9e9e;
 
+  max-height: 100px;
+  overflow-y: scroll;
 }
 
 .colors-container > .color-item {
@@ -226,19 +233,20 @@ footer {
 }
 
 .label-wrapper::-webkit-scrollbar,
-.bookmark-items::-webkit-scrollbar {
+.bookmark-items::-webkit-scrollbar,
+.board-container-all-labels::-webkit-scrollbar,
+.board-container-content::-webkit-scrollbar,
+.label-url-wrapper::-webkit-scrollbar,
+.quick-add-labels::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
 
-.label-wrapper::-webkit-scrollbar-thumb,
-.bookmark-items::-webkit-scrollbar-thumb {
-  background-color: transparent;
-}
-
 .colors-container .color-item,
 .label-wrapper .color-item,
-.current-label .color-item {
+.current-label .color-item,
+.board-container-all-labels .color-item,
+.quick-add-labels .color-item {
   min-height: 20px;
   line-height: 20px;
   margin-right: 10px;
@@ -269,7 +277,9 @@ footer {
 }
 
 .current-label > .color-item > button,
-.label-wrapper > .color-item > button {
+.label-wrapper > .color-item > button,
+.board-container-all-labels > .color-item > button,
+.quick-add-labels button {
   display: none;
 }
 
@@ -299,4 +309,104 @@ footer {
 
 .label-container-closed-button {
   font-size: 11px;
+}
+
+.board-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.board-container-content {
+  display: flex;
+  max-width: 100%;
+  height: 100%;
+  overflow-x: scroll;
+  padding: 5px;
+  margin-bottom: 10px;
+}
+
+.board-container-content > .label-col {
+  margin-right: 20px;
+  min-width: 200px;
+  width: 200px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+  border-radius: 5px 5px 0 0;
+  background-color: white;
+}
+
+.board-container-content .label-col-title {
+  text-align: center;
+  padding: 10px;
+  color: white;
+  font-size: 13px;
+  font-weight: bold;
+  border-radius: 5px 5px 0 0;
+}
+
+.label-url-wrapper {
+  padding: 10px;
+  overflow: scroll;
+  max-height: calc(100% - 70px);
+}
+
+.label-url-item-wrapper {
+  position: relative;
+}
+
+.label-url-item-wrapper .label-col-url {
+  padding: 5px;
+  border: rgb(155, 155, 155) 1px solid;
+  border-radius: 3px;
+  margin-bottom: 10px;
+  display: block;
+  color: black;
+  text-decoration: none;
+}
+
+.label-url-item-wrapper .label-col-remove-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  line-height: 12px;
+  border-radius: 50%;
+  color: #7b7b7b;
+}
+
+.board-container-all-labels,
+.quick-add-labels {
+  display: flex;
+  justify-content: center;
+  max-width: 100%;
+  overflow-x: scroll;
+  padding: 10px 0;
+}
+
+.quick-add-label {
+  padding: 0 20px;
+  max-width: 400px;
+  padding-top: 10px;
+  position: relative;
+
+  border: #d0d0d0 1px solid;
+  border-radius: 5px;
+}
+
+.quick-add-label-close-button {
+  position: absolute;
+  top: -2px;
+  right: 0px;
+  font-size: 13px;
+  width: 25px;
+  height: 25px;
+  line-height: 15px;
+  border-radius: 50%;
+}
+
+.quick-add-label-close-button:hover,
+.label-url-wrapper .label-col-remove-button:hover {
+  background-color: #efefef61;
 }
