@@ -191,8 +191,8 @@ function drawBoard() {
     } = result;
 
     if (boardSelectedLabels.length === 0)
-      boardContent.innerText =
-        "Empty board! Let's create some labels and click on the new created label to custom your board.";
+      boardContent.innerHTML =
+        "<p style='text-align: center;width: 100%;'>Empty board! Let's create some labels and click on the new created label to custom your board.</p>";
 
     const onSelectLabel = (label) => {
       if (boardSelectedLabels.includes(label)) {
