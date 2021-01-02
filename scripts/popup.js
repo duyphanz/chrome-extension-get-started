@@ -39,7 +39,7 @@ closeCreateLabelModal.addEventListener("click", () =>
   labelContainer.classList.toggle("hidden")
 );
 closeQuickAddLabel.addEventListener("click", () =>
-quickAddLabel.classList.toggle("visibility")
+  quickAddLabel.classList.toggle("visibility")
 );
 
 // init DOMTree state
@@ -235,14 +235,54 @@ function drawBoard() {
       labelWrapper.appendChild(labelURLWrapper);
 
       const urls = labels[label];
-      urls.forEach((url) => {
+      urls.forEach((urlObject) => {
+        const labelURLItemWrapper = document.createElement("div");
+        labelURLItemWrapper.setAttribute(
+          "class",
+          `label-url-item-wrapper item-${label}`
+        );
+
         const urlItem = document.createElement("a");
         urlItem.setAttribute("class", `label-col-url item-${label}`);
-        urlItem.href = url.url;
+        urlItem.href = urlObject.url;
         urlItem.target = "_blank";
-        urlItem.innerText = `[${url.dir}] - ${url.title}`;
+        urlItem.innerText = `[${urlObject.dir}] - ${urlObject.title}`;
 
-        labelURLWrapper.appendChild(urlItem);
+        const removeButton = document.createElement("button");
+        removeButton.setAttribute(
+          "class",
+          `label-col-remove-button item-${label} reset-button`
+        );
+        removeButton.innerText = "x";
+        removeButton.onclick = function () {
+          chrome.storage.sync.get(["app"], function (result) {
+            let {
+              app: { urls, labels },
+              app,
+            } = result;
+
+            delete urls[urlObject.url];
+            updatedLabel = {
+              ...labels,
+              [label]: labels[label].filter((l) => l.url !== urlObject.url),
+            };
+
+            chrome.storage.sync.set(
+              {
+                app: { ...app, urls, labels: updatedLabel },
+              },
+              function () {
+                drawBoard();
+                const currentItemID = historyDir[historyDir.length - 1].id;
+                drawBookmarkLayout(currentItemID);
+              }
+            );
+          });
+        };
+
+        labelURLItemWrapper.appendChild(urlItem);
+        labelURLItemWrapper.appendChild(removeButton);
+        labelURLWrapper.appendChild(labelURLItemWrapper);
       });
       boardContent.appendChild(labelWrapper);
     });
@@ -423,20 +463,28 @@ function drawColorItem(
     removeBtn.onclick = function () {
       chrome.storage.sync.get(["app"], function (result) {
         let {
-          app: { labels },
+          app: { labels, boardSelectedLabels },
           app,
         } = result;
         delete labels[labelName];
+        const updatedBoardSelectedLabels = boardSelectedLabels.filter(
+          (l) => l !== labelName
+        );
 
         chrome.storage.sync.set(
           {
-            app: { ...app, labels },
+            app: {
+              ...app,
+              labels,
+              boardSelectedLabels: updatedBoardSelectedLabels,
+            },
           },
           function () {
             colorsContainer.textContent = "";
             drawColorItem(labels);
-            const currentItemID = historyDir[historyDir.length - 1].id;
-            drawBookmarkLayout(currentItemID);
+            drawBoard();
+            const { id } = historyDir[historyDir.length - 1] || {};
+            drawBookmarkLayout(id);
           }
         );
       });
@@ -486,7 +534,7 @@ function addLabelToURL(item, labelName) {
         app: { ...app, urls, labels: updatedLabel },
       },
       function () {
-        const currentItemID = currentDir.id || '0';
+        const currentItemID = currentDir.id || "0";
         drawBookmarkLayout(currentItemID);
       }
     );

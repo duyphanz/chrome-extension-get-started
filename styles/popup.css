@@ -236,7 +236,8 @@ footer {
 .bookmark-items::-webkit-scrollbar,
 .board-container-all-labels::-webkit-scrollbar,
 .board-container-content::-webkit-scrollbar,
-.label-url-wrapper::-webkit-scrollbar {
+.label-url-wrapper::-webkit-scrollbar,
+.quick-add-labels::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
@@ -349,7 +350,11 @@ footer {
   max-height: calc(100% - 70px);
 }
 
-.label-url-wrapper .label-col-url {
+.label-url-item-wrapper {
+  position: relative;
+}
+
+.label-url-item-wrapper .label-col-url {
   padding: 5px;
   border: rgb(155, 155, 155) 1px solid;
   border-radius: 3px;
@@ -357,6 +362,18 @@ footer {
   display: block;
   color: black;
   text-decoration: none;
+}
+
+.label-url-item-wrapper .label-col-remove-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  line-height: 12px;
+  border-radius: 50%;
+  color: #7b7b7b;
 }
 
 .board-container-all-labels,
@@ -373,19 +390,23 @@ footer {
   max-width: 400px;
   padding-top: 10px;
   position: relative;
+
+  border: #d0d0d0 1px solid;
+  border-radius: 5px;
 }
 
 .quick-add-label-close-button {
   position: absolute;
-  top: 4px;
-  right: 0;
-  font-size: 15px;
+  top: -2px;
+  right: 0px;
+  font-size: 13px;
   width: 25px;
   height: 25px;
   line-height: 15px;
   border-radius: 50%;
 }
 
-.quick-add-label-close-button:hover {
+.quick-add-label-close-button:hover,
+.label-url-wrapper .label-col-remove-button:hover {
   background-color: #efefef61;
 }
