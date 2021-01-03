@@ -342,36 +342,63 @@ function createBookmarkItem(items) {
   }
 
   for (let item of items) {
-    const wrapper = document.createElement("div");
+    const wrapper = BookLabel.createDOMElement("div", {
+      className: "items-wrapper",
+      parentEl: itemList,
+    });
 
-    const urlWrapper = document.createElement("div");
-    urlWrapper.setAttribute("class", "url-wrapper");
+    const urlWrapper = BookLabel.createDOMElement("div", {
+      className: "url-wrapper",
+      parentEl: wrapper,
+    });
 
-    const labelWrapper = document.createElement("div");
-    labelWrapper.setAttribute("class", `label-wrapper item-${item.id} hidden`);
-    const currentLabelWrapper = document.createElement("div");
-    currentLabelWrapper.setAttribute("class", `current-label item-${item.id}`);
+    const labelWrapper = BookLabel.createDOMElement("div", {
+      className: `label-wrapper item-${item.id} hidden`,
+      parentEl: wrapper,
+    });
 
-    const addLabelButton = document.createElement("button");
-    addLabelButton.setAttribute(
-      "class",
-      `reset-button add-label-button item-${item.id}`
+    BookLabel.createDOMElement("div", {
+      className: `current-label item-${item.id}`,
+      parentEl: wrapper,
+    });
+
+    const controlWrapper = BookLabel.createDOMElement("div", {
+      className: `control-wrapper item-${item.id}`,
+      parentEl: wrapper,
+    });
+
+    BookLabel.createDOMElement("div", {
+      className: `caption-text item-${item.id} visibility`,
+      parentEl: controlWrapper,
+      innerText: "Click to select/remove the label",
+    });
+
+    BookLabel.createDOMElement("button", {
+      className: `reset-button add-label-button item-${item.id}`,
+      innerText: "+",
+      parentEl: controlWrapper,
+      onClick: () => {
+        toggleCreatingLabel(item.id);
+      },
+    });
+
+    BookLabel.createDOMElement(
+      "img",
+      { parentEl: urlWrapper },
+      {
+        src: `http://www.google.com/s2/favicons?domain=${item.url}`,
+      }
     );
-    addLabelButton.innerText = "+";
-    addLabelButton.onclick = function () {
-      toggleCreatingLabel(item.id);
-    };
 
-    const controlWrapper = document.createElement("div");
-    controlWrapper.setAttribute("class", `control-wrapper item-${item.id}`);
-    const captionText = document.createElement("div");
-    captionText.setAttribute(
-      "class",
-      `caption-text item-${item.id} visibility`
+    BookLabel.createDOMElement(
+      "a",
+      {
+        parentEl: urlWrapper,
+        className: "item-url",
+        innerText: item.title,
+      },
+      { href: item.url, target: "_blank" }
     );
-    captionText.innerText = "Click to select/remove the label";
-    controlWrapper.appendChild(captionText);
-    controlWrapper.appendChild(addLabelButton);
 
     chrome.storage.sync.get(["app"], function (result) {
       const {
@@ -388,24 +415,7 @@ function createBookmarkItem(items) {
       }
     });
 
-    const anchor = document.createElement("a");
-    const favIcon = document.createElement("img");
-
-    anchor.href = item.url;
-    anchor.target = "_blank";
-    anchor.setAttribute("class", "item-url");
-    anchor.innerText = item.title;
-
-    wrapper.setAttribute("class", "items-wrapper");
-    favIcon.src = `http://www.google.com/s2/favicons?domain=${item.url}`;
-
-    urlWrapper.appendChild(favIcon);
-    urlWrapper.appendChild(anchor);
-    wrapper.appendChild(urlWrapper);
-    wrapper.appendChild(labelWrapper);
-    wrapper.appendChild(currentLabelWrapper);
-    wrapper.appendChild(controlWrapper);
-    itemList.appendChild(wrapper);
+  
   }
 }
 
