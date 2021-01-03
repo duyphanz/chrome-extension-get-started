@@ -45,22 +45,15 @@ closeQuickAddLabel.addEventListener("click", () =>
 // init DOMTree state
 
 // init storage
-chrome.storage.sync.get(["app"], function (result) {
-  console.log("Storage: ", result);
+BookLabel.getStorage((result) => {
   if (Object.keys(result).length === 0) {
-    chrome.storage.sync.set({
-      app: { labels: {}, urls: {}, boardSelectedLabels: [] },
-    });
+    BookLabel.setStorage({ labels: {}, urls: {}, boardSelectedLabels: [] });
     return;
   }
 
-  const {
-    app: { labels, urls },
-  } = result;
-
+  const { labels } = result;
   drawQuickAdd();
-  // set init labels
-  drawColorItem(labels);
+  drawColorItem(labels, colorsContainer);
 });
 
 // get init bookmark tree

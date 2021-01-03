@@ -25,10 +25,26 @@ function createDOMElement(name, options, props = {}) {
   return el;
 }
 
+function getStorage(callback) {
+  chrome.storage.sync.get(["app"], function (result) {
+    const { app } = result;
+    callback({ app, ...app });
+  });
+}
+
+function setStorage(payload = {}) {
+  getStorage((app) => {
+    chrome.storage.sync.set({
+      app: { ...app, ...payload },
+    });
+  });
+}
+
 const BookLabel = {
   formatLabelName,
   destructuringLabelName,
   createDOMElement,
+  getStorage,
 };
 
 window.BookLabel = BookLabel;
