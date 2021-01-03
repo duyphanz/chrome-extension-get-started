@@ -46,7 +46,7 @@ closeQuickAddLabel.addEventListener("click", () =>
 
 // init storage
 chrome.storage.sync.get(["app"], function (result) {
-  console.log("🚀 ~ file: popup.js ~ line 41 ~ result", result);
+  console.log("Storage: ", result);
   if (Object.keys(result).length === 0) {
     chrome.storage.sync.set({
       app: { labels: {}, urls: {}, boardSelectedLabels: [] },
@@ -70,21 +70,22 @@ function createBookmarkTree(items) {
   bmTree.textContent = "";
 
   for (let item of items) {
-    const button = document.createElement("button");
-
-    button.setAttribute("class", "bookmark-item");
-    button.onclick = function () {
+    function onFolderClick() {
       backButton.innerText = item.title;
       historyDir.push(item);
 
       drawBookmarkLayout(item.id);
-    };
-    button.innerText = item.title;
-    bmTree.appendChild(button);
+    }
+
+    BookLabel.createDOMElement("button", {
+      className: "bookmark-item",
+      innerText: item.title,
+      onClick: onFolderClick,
+      parentEl: bmTree,
+    });
   }
 }
 
-// handle DOM events
 function onBack() {
   if (isBoardTab) {
     toggleTab();
@@ -125,7 +126,7 @@ function onCreateLabel() {
       app,
     } = result;
 
-    const newLabel = formatLabelName(name.value, color.value);
+    const newLabel = BookLabel.formatLabelName(name.value, color.value);
     labels = { ...labels, [newLabel]: [] };
     chrome.storage.sync.set({ app: { ...app, labels } }, function () {
       colorsContainer.textContent = "";
@@ -219,72 +220,73 @@ function drawBoard() {
     );
 
     boardSelectedLabels.forEach((label) => {
-      const labelWrapper = document.createElement("div");
-      labelWrapper.setAttribute("class", `label-col item-${label}`);
+      const labelWrapper = BookLabel.createDOMElement("div", {
+        className: `label-col item-${label}`,
+        parentEl: boardContent,
+      });
 
-      const labelTitle = document.createElement("div");
-      const [l, c] = destructuringLabelName(label);
-      labelTitle.setAttribute("class", `label-col-title item-${label}`);
-      labelTitle.setAttribute("style", `background-color:${c}`);
-      labelTitle.innerText = l;
+      const [l, c] = BookLabel.destructuringLabelName(label);
 
-      const labelURLWrapper = document.createElement("div");
-      labelURLWrapper.setAttribute("class", `label-url-wrapper item-${label}`);
+      BookLabel.createDOMElement("div", {
+        className: `label-col-title item-${label}`,
+        style: `background-color:${c}`,
+        innerText: l,
+        parentEl: labelWrapper,
+      });
 
-      labelWrapper.appendChild(labelTitle);
-      labelWrapper.appendChild(labelURLWrapper);
+      const labelURLWrapper = BookLabel.createDOMElement("div", {
+        className: `label-url-wrapper item-${label}`,
+        parentEl: labelWrapper,
+      });
 
       const urls = labels[label];
       urls.forEach((urlObject) => {
-        const labelURLItemWrapper = document.createElement("div");
-        labelURLItemWrapper.setAttribute(
-          "class",
-          `label-url-item-wrapper item-${label}`
+        const labelURLItemWrapper = BookLabel.createDOMElement("div", {
+          className: `label-url-item-wrapper item-${label}`,
+          parentEl: labelURLWrapper,
+        });
+
+        BookLabel.createDOMElement(
+          "a",
+          {
+            className: `label-col-url item-${label}`,
+            innerText: `[${urlObject.dir}] - ${urlObject.title}`,
+            parentEl: labelURLItemWrapper,
+          },
+          { href: urlObject.url, target: "_blank" }
         );
 
-        const urlItem = document.createElement("a");
-        urlItem.setAttribute("class", `label-col-url item-${label}`);
-        urlItem.href = urlObject.url;
-        urlItem.target = "_blank";
-        urlItem.innerText = `[${urlObject.dir}] - ${urlObject.title}`;
+        BookLabel.createDOMElement("button", {
+          className: `label-col-remove-button item-${label} reset-button`,
+          innerText: "x",
+          parentEl: labelURLItemWrapper,
+          onClick: () => {
+            chrome.storage.sync.get(["app"], function (result) {
+              let {
+                app: { urls, labels },
+                app,
+              } = result;
 
-        const removeButton = document.createElement("button");
-        removeButton.setAttribute(
-          "class",
-          `label-col-remove-button item-${label} reset-button`
-        );
-        removeButton.innerText = "x";
-        removeButton.onclick = function () {
-          chrome.storage.sync.get(["app"], function (result) {
-            let {
-              app: { urls, labels },
-              app,
-            } = result;
+              delete urls[urlObject.url];
+              updatedLabel = {
+                ...labels,
+                [label]: labels[label].filter((l) => l.url !== urlObject.url),
+              };
 
-            delete urls[urlObject.url];
-            updatedLabel = {
-              ...labels,
-              [label]: labels[label].filter((l) => l.url !== urlObject.url),
-            };
-
-            chrome.storage.sync.set(
-              {
-                app: { ...app, urls, labels: updatedLabel },
-              },
-              function () {
-                drawBoard();
-                const currentItemID = historyDir[historyDir.length - 1].id;
-                drawBookmarkLayout(currentItemID);
-              }
-            );
-          });
-        };
-
-        labelURLItemWrapper.appendChild(urlItem);
-        labelURLItemWrapper.appendChild(removeButton);
-        labelURLWrapper.appendChild(labelURLItemWrapper);
+              chrome.storage.sync.set(
+                {
+                  app: { ...app, urls, labels: updatedLabel },
+                },
+                function () {
+                  drawBoard();
+                  const currentItemID = historyDir[historyDir.length - 1].id;
+                  drawBookmarkLayout(currentItemID);
+                }
+              );
+            });
+          },
+        });
       });
-      boardContent.appendChild(labelWrapper);
     });
   });
 }
@@ -425,7 +427,7 @@ function drawColorItem(
   }
 
   labelNames.forEach((labelName) => {
-    const [l, c] = destructuringLabelName(labelName);
+    const [l, c] = BookLabel.destructuringLabelName(labelName);
     const coloredItem = document.createElement("div");
     let isSelectedLabel = false;
 
@@ -539,12 +541,4 @@ function addLabelToURL(item, labelName) {
       }
     );
   });
-}
-
-function formatLabelName(label, color) {
-  return `${label}|${color}`;
-}
-
-function destructuringLabelName(name) {
-  return name.split("|");
 }
