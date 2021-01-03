@@ -42,8 +42,6 @@ closeQuickAddLabel.addEventListener("click", () =>
   quickAddLabel.classList.toggle("visibility")
 );
 
-// init DOMTree state
-
 // init storage
 BookLabel.getStorage((result) => {
   if (Object.keys(result).length === 0) {
@@ -56,8 +54,10 @@ BookLabel.getStorage((result) => {
   drawColorItem(labels, colorsContainer);
 });
 
-// get init bookmark tree
+//START: draw bookmark tree
 drawBookmarkLayout("0");
+
+//=====================================================================
 
 function createBookmarkTree(items) {
   bmTree.textContent = "";
@@ -83,7 +83,6 @@ function onBack() {
   if (isBoardTab) {
     toggleTab();
     setCurrentBackButtonLabel();
-
     return;
   }
   if (historyDir.length === 0) return;
@@ -124,8 +123,7 @@ function onCreateLabel() {
       name.value = "";
       drawColorItem(labels);
 
-      const { id } = historyDir[historyDir.length - 1] || {};
-      drawBookmarkLayout(id);
+      drawCurrentBookmarkLayout();
       drawBoard();
     });
   });
@@ -258,8 +256,7 @@ function drawBoard() {
 
               BookLabel.setStorage({ urls, labels: updatedLabel }, () => {
                 drawBoard();
-                const currentItemID = historyDir[historyDir.length - 1].id;
-                drawBookmarkLayout(currentItemID);
+                drawCurrentBookmarkLayout();
               });
             });
           },
@@ -470,8 +467,7 @@ function drawColorItem(
               colorsContainer.textContent = "";
               drawColorItem(labels);
               drawBoard();
-              const { id } = historyDir[historyDir.length - 1] || {};
-              drawBookmarkLayout(id);
+              drawCurrentBookmarkLayout();
             }
           );
         });
@@ -481,12 +477,8 @@ function drawColorItem(
 }
 
 function addLabelToURL(item, labelName) {
-  chrome.storage.sync.get(["app"], function (result) {
-    let {
-      app: { urls, labels },
-      app,
-    } = result;
-
+  BookLabel.getStorage((result) => {
+    let { urls, labels } = result;
     let updatedLabel = {};
     const currentDir = historyDir[historyDir.length - 1] || {};
     // remove label
@@ -513,8 +505,12 @@ function addLabelToURL(item, labelName) {
     }
 
     BookLabel.setStorage({ urls, labels: updatedLabel }, () => {
-      const currentItemID = currentDir.id || "0";
-      drawBookmarkLayout(currentItemID);
+      drawCurrentBookmarkLayout();
     });
   });
+}
+
+function drawCurrentBookmarkLayout() {
+  const { id } = historyDir[historyDir.length - 1] || {};
+  drawBookmarkLayout(id);
 }
