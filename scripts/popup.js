@@ -113,15 +113,13 @@ function onCreateLabel() {
     return;
   }
 
-  chrome.storage.sync.get(["app"], function (result) {
-    let {
-      app: { labels },
-      app,
-    } = result;
+  BookLabel.getStorage((result) => {
+    let { labels } = result;
 
     const newLabel = BookLabel.formatLabelName(name.value, color.value);
     labels = { ...labels, [newLabel]: [] };
-    chrome.storage.sync.set({ app: { ...app, labels } }, function () {
+
+    BookLabel.setStorage({ labels }, () => {
       colorsContainer.textContent = "";
       name.value = "";
       drawColorItem(labels);
@@ -134,13 +132,12 @@ function onCreateLabel() {
 }
 
 function drawQuickAdd() {
-  chrome.storage.sync.get(["app"], function (result) {
-    const {
-      app: { labels, urls },
-    } = result;
+  BookLabel.getStorage((result) => {
+    const { labels, urls } = result;
 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const { url, title } = tabs[0];
+      chrome.bookmarks.search({ query: url }, onFulfilled);
 
       function onFulfilled(bookmarkItems) {
         if (bookmarkItems.length) {
@@ -169,7 +166,6 @@ function drawQuickAdd() {
           console.log("active tab is not bookmarked");
         }
       }
-      chrome.bookmarks.search({ query: url }, onFulfilled);
     });
   });
 }
@@ -178,11 +174,8 @@ function drawBoard() {
   boardContainerAllLabels.textContent = "";
   boardContent.textContent = "";
 
-  chrome.storage.sync.get(["app"], function (result) {
-    let {
-      app: { labels, boardSelectedLabels },
-      app,
-    } = result;
+  BookLabel.getStorage((result) => {
+    let { labels, boardSelectedLabels } = result;
 
     if (boardSelectedLabels.length === 0)
       boardContent.innerHTML =
@@ -194,11 +187,12 @@ function drawBoard() {
       } else {
         boardSelectedLabels.push(label);
       }
-      chrome.storage.sync.set(
+      BookLabel.setStorage(
         {
-          app: { ...app, labels, boardSelectedLabels },
+          labels,
+          boardSelectedLabels,
         },
-        function () {
+        () => {
           drawBoard();
         }
       );
@@ -254,28 +248,19 @@ function drawBoard() {
           innerText: "x",
           parentEl: labelURLItemWrapper,
           onClick: () => {
-            chrome.storage.sync.get(["app"], function (result) {
-              let {
-                app: { urls, labels },
-                app,
-              } = result;
-
+            BookLabel.getStorage((result) => {
+              const { urls, labels } = result;
               delete urls[urlObject.url];
               updatedLabel = {
                 ...labels,
                 [label]: labels[label].filter((l) => l.url !== urlObject.url),
               };
 
-              chrome.storage.sync.set(
-                {
-                  app: { ...app, urls, labels: updatedLabel },
-                },
-                function () {
-                  drawBoard();
-                  const currentItemID = historyDir[historyDir.length - 1].id;
-                  drawBookmarkLayout(currentItemID);
-                }
-              );
+              BookLabel.setStorage({ urls, labels: updatedLabel }, () => {
+                drawBoard();
+                const currentItemID = historyDir[historyDir.length - 1].id;
+                drawBookmarkLayout(currentItemID);
+              });
             });
           },
         });
@@ -393,10 +378,8 @@ function createBookmarkItem(items) {
       { href: item.url, target: "_blank" }
     );
 
-    chrome.storage.sync.get(["app"], function (result) {
-      const {
-        app: { labels, urls },
-      } = result;
+    BookLabel.getStorage((result) => {
+      const { labels, urls } = result;
       const currentLabel = urls[item.url];
       drawColorItem(labels, labelWrapper, item, currentLabel);
 
@@ -472,25 +455,18 @@ function drawColorItem(
       innerText: "x",
       parentEl: coloredItem,
       onClick: () => {
-        chrome.storage.sync.get(["app"], function (result) {
-          let {
-            app: { labels, boardSelectedLabels },
-            app,
-          } = result;
+        BookLabel.getStorage((result) => {
+          let { labels, boardSelectedLabels } = result;
           delete labels[labelName];
           const updatedBoardSelectedLabels = boardSelectedLabels.filter(
             (l) => l !== labelName
           );
-
-          chrome.storage.sync.set(
+          BookLabel.setStorage(
             {
-              app: {
-                ...app,
-                labels,
-                boardSelectedLabels: updatedBoardSelectedLabels,
-              },
+              labels,
+              boardSelectedLabels: updatedBoardSelectedLabels,
             },
-            function () {
+            () => {
               colorsContainer.textContent = "";
               drawColorItem(labels);
               drawBoard();
@@ -536,14 +512,9 @@ function addLabelToURL(item, labelName) {
       };
     }
 
-    chrome.storage.sync.set(
-      {
-        app: { ...app, urls, labels: updatedLabel },
-      },
-      function () {
-        const currentItemID = currentDir.id || "0";
-        drawBookmarkLayout(currentItemID);
-      }
-    );
+    BookLabel.setStorage({ urls, labels: updatedLabel }, () => {
+      const currentItemID = currentDir.id || "0";
+      drawBookmarkLayout(currentItemID);
+    });
   });
 }

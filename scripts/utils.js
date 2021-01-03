@@ -32,11 +32,11 @@ function getStorage(callback) {
   });
 }
 
-function setStorage(payload = {}) {
+function setStorage(payload = {}, calback) {
   getStorage((app) => {
     chrome.storage.sync.set({
       app: { ...app, ...payload },
-    });
+    }, calback);
   });
 }
 
@@ -45,6 +45,7 @@ const BookLabel = {
   destructuringLabelName,
   createDOMElement,
   getStorage,
+  setStorage,
 };
 
 window.BookLabel = BookLabel;
