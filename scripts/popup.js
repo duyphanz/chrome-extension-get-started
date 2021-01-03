@@ -42,54 +42,47 @@ closeQuickAddLabel.addEventListener("click", () =>
   quickAddLabel.classList.toggle("visibility")
 );
 
-// init DOMTree state
-
 // init storage
-chrome.storage.sync.get(["app"], function (result) {
-  console.log("🚀 ~ file: popup.js ~ line 41 ~ result", result);
+BookLabel.getStorage((result) => {
   if (Object.keys(result).length === 0) {
-    chrome.storage.sync.set({
-      app: { labels: {}, urls: {}, boardSelectedLabels: [] },
-    });
+    BookLabel.setStorage({ labels: {}, urls: {}, boardSelectedLabels: [] });
     return;
   }
 
-  const {
-    app: { labels, urls },
-  } = result;
-
+  const { labels } = result;
   drawQuickAdd();
-  // set init labels
-  drawColorItem(labels);
+  drawColorItem(labels, colorsContainer);
 });
 
-// get init bookmark tree
+//START: draw bookmark tree
 drawBookmarkLayout("0");
+
+//=====================================================================
 
 function createBookmarkTree(items) {
   bmTree.textContent = "";
 
   for (let item of items) {
-    const button = document.createElement("button");
-
-    button.setAttribute("class", "bookmark-item");
-    button.onclick = function () {
+    function onFolderClick() {
       backButton.innerText = item.title;
       historyDir.push(item);
 
       drawBookmarkLayout(item.id);
-    };
-    button.innerText = item.title;
-    bmTree.appendChild(button);
+    }
+
+    BookLabel.createDOMElement("button", {
+      className: "bookmark-item",
+      innerText: item.title,
+      onClick: onFolderClick,
+      parentEl: bmTree,
+    });
   }
 }
 
-// handle DOM events
 function onBack() {
   if (isBoardTab) {
     toggleTab();
     setCurrentBackButtonLabel();
-
     return;
   }
   if (historyDir.length === 0) return;
@@ -119,34 +112,30 @@ function onCreateLabel() {
     return;
   }
 
-  chrome.storage.sync.get(["app"], function (result) {
-    let {
-      app: { labels },
-      app,
-    } = result;
+  BookLabel.getStorage((result) => {
+    let { labels } = result;
 
-    const newLabel = formatLabelName(name.value, color.value);
+    const newLabel = BookLabel.formatLabelName(name.value, color.value);
     labels = { ...labels, [newLabel]: [] };
-    chrome.storage.sync.set({ app: { ...app, labels } }, function () {
+
+    BookLabel.setStorage({ labels }, () => {
       colorsContainer.textContent = "";
       name.value = "";
       drawColorItem(labels);
 
-      const { id } = historyDir[historyDir.length - 1] || {};
-      drawBookmarkLayout(id);
+      drawCurrentBookmarkLayout();
       drawBoard();
     });
   });
 }
 
 function drawQuickAdd() {
-  chrome.storage.sync.get(["app"], function (result) {
-    const {
-      app: { labels, urls },
-    } = result;
+  BookLabel.getStorage((result) => {
+    const { labels, urls } = result;
 
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const { url, title } = tabs[0];
+      chrome.bookmarks.search({ query: url }, onFulfilled);
 
       function onFulfilled(bookmarkItems) {
         if (bookmarkItems.length) {
@@ -175,7 +164,6 @@ function drawQuickAdd() {
           console.log("active tab is not bookmarked");
         }
       }
-      chrome.bookmarks.search({ query: url }, onFulfilled);
     });
   });
 }
@@ -184,11 +172,8 @@ function drawBoard() {
   boardContainerAllLabels.textContent = "";
   boardContent.textContent = "";
 
-  chrome.storage.sync.get(["app"], function (result) {
-    let {
-      app: { labels, boardSelectedLabels },
-      app,
-    } = result;
+  BookLabel.getStorage((result) => {
+    let { labels, boardSelectedLabels } = result;
 
     if (boardSelectedLabels.length === 0)
       boardContent.innerHTML =
@@ -200,11 +185,12 @@ function drawBoard() {
       } else {
         boardSelectedLabels.push(label);
       }
-      chrome.storage.sync.set(
+      BookLabel.setStorage(
         {
-          app: { ...app, labels, boardSelectedLabels },
+          labels,
+          boardSelectedLabels,
         },
-        function () {
+        () => {
           drawBoard();
         }
       );
@@ -219,72 +205,63 @@ function drawBoard() {
     );
 
     boardSelectedLabels.forEach((label) => {
-      const labelWrapper = document.createElement("div");
-      labelWrapper.setAttribute("class", `label-col item-${label}`);
+      const labelWrapper = BookLabel.createDOMElement("div", {
+        className: `label-col item-${label}`,
+        parentEl: boardContent,
+      });
 
-      const labelTitle = document.createElement("div");
-      const [l, c] = destructuringLabelName(label);
-      labelTitle.setAttribute("class", `label-col-title item-${label}`);
-      labelTitle.setAttribute("style", `background-color:${c}`);
-      labelTitle.innerText = l;
+      const [l, c] = BookLabel.destructuringLabelName(label);
 
-      const labelURLWrapper = document.createElement("div");
-      labelURLWrapper.setAttribute("class", `label-url-wrapper item-${label}`);
+      BookLabel.createDOMElement("div", {
+        className: `label-col-title item-${label}`,
+        style: `background-color:${c}`,
+        innerText: l,
+        parentEl: labelWrapper,
+      });
 
-      labelWrapper.appendChild(labelTitle);
-      labelWrapper.appendChild(labelURLWrapper);
+      const labelURLWrapper = BookLabel.createDOMElement("div", {
+        className: `label-url-wrapper item-${label}`,
+        parentEl: labelWrapper,
+      });
 
       const urls = labels[label];
       urls.forEach((urlObject) => {
-        const labelURLItemWrapper = document.createElement("div");
-        labelURLItemWrapper.setAttribute(
-          "class",
-          `label-url-item-wrapper item-${label}`
+        const labelURLItemWrapper = BookLabel.createDOMElement("div", {
+          className: `label-url-item-wrapper item-${label}`,
+          parentEl: labelURLWrapper,
+        });
+
+        BookLabel.createDOMElement(
+          "a",
+          {
+            className: `label-col-url item-${label}`,
+            innerText: `[${urlObject.dir}] - ${urlObject.title}`,
+            parentEl: labelURLItemWrapper,
+          },
+          { href: urlObject.url, target: "_blank" }
         );
 
-        const urlItem = document.createElement("a");
-        urlItem.setAttribute("class", `label-col-url item-${label}`);
-        urlItem.href = urlObject.url;
-        urlItem.target = "_blank";
-        urlItem.innerText = `[${urlObject.dir}] - ${urlObject.title}`;
+        BookLabel.createDOMElement("button", {
+          className: `label-col-remove-button item-${label} reset-button`,
+          innerText: "x",
+          parentEl: labelURLItemWrapper,
+          onClick: () => {
+            BookLabel.getStorage((result) => {
+              const { urls, labels } = result;
+              delete urls[urlObject.url];
+              updatedLabel = {
+                ...labels,
+                [label]: labels[label].filter((l) => l.url !== urlObject.url),
+              };
 
-        const removeButton = document.createElement("button");
-        removeButton.setAttribute(
-          "class",
-          `label-col-remove-button item-${label} reset-button`
-        );
-        removeButton.innerText = "x";
-        removeButton.onclick = function () {
-          chrome.storage.sync.get(["app"], function (result) {
-            let {
-              app: { urls, labels },
-              app,
-            } = result;
-
-            delete urls[urlObject.url];
-            updatedLabel = {
-              ...labels,
-              [label]: labels[label].filter((l) => l.url !== urlObject.url),
-            };
-
-            chrome.storage.sync.set(
-              {
-                app: { ...app, urls, labels: updatedLabel },
-              },
-              function () {
+              BookLabel.setStorage({ urls, labels: updatedLabel }, () => {
                 drawBoard();
-                const currentItemID = historyDir[historyDir.length - 1].id;
-                drawBookmarkLayout(currentItemID);
-              }
-            );
-          });
-        };
-
-        labelURLItemWrapper.appendChild(urlItem);
-        labelURLItemWrapper.appendChild(removeButton);
-        labelURLWrapper.appendChild(labelURLItemWrapper);
+                drawCurrentBookmarkLayout();
+              });
+            });
+          },
+        });
       });
-      boardContent.appendChild(labelWrapper);
     });
   });
 }
@@ -340,41 +317,66 @@ function createBookmarkItem(items) {
   }
 
   for (let item of items) {
-    const wrapper = document.createElement("div");
+    const wrapper = BookLabel.createDOMElement("div", {
+      className: "items-wrapper",
+      parentEl: itemList,
+    });
 
-    const urlWrapper = document.createElement("div");
-    urlWrapper.setAttribute("class", "url-wrapper");
+    const urlWrapper = BookLabel.createDOMElement("div", {
+      className: "url-wrapper",
+      parentEl: wrapper,
+    });
 
-    const labelWrapper = document.createElement("div");
-    labelWrapper.setAttribute("class", `label-wrapper item-${item.id} hidden`);
-    const currentLabelWrapper = document.createElement("div");
-    currentLabelWrapper.setAttribute("class", `current-label item-${item.id}`);
+    const labelWrapper = BookLabel.createDOMElement("div", {
+      className: `label-wrapper item-${item.id} hidden`,
+      parentEl: wrapper,
+    });
 
-    const addLabelButton = document.createElement("button");
-    addLabelButton.setAttribute(
-      "class",
-      `reset-button add-label-button item-${item.id}`
+    BookLabel.createDOMElement("div", {
+      className: `current-label item-${item.id}`,
+      parentEl: wrapper,
+    });
+
+    const controlWrapper = BookLabel.createDOMElement("div", {
+      className: `control-wrapper item-${item.id}`,
+      parentEl: wrapper,
+    });
+
+    BookLabel.createDOMElement("div", {
+      className: `caption-text item-${item.id} visibility`,
+      parentEl: controlWrapper,
+      innerText: "Click to select/remove the label",
+    });
+
+    BookLabel.createDOMElement("button", {
+      className: `reset-button add-label-button item-${item.id}`,
+      innerText: "+",
+      parentEl: controlWrapper,
+      onClick: () => {
+        toggleCreatingLabel(item.id);
+      },
+    });
+
+    BookLabel.createDOMElement(
+      "img",
+      { parentEl: urlWrapper },
+      {
+        src: `http://www.google.com/s2/favicons?domain=${item.url}`,
+      }
     );
-    addLabelButton.innerText = "+";
-    addLabelButton.onclick = function () {
-      toggleCreatingLabel(item.id);
-    };
 
-    const controlWrapper = document.createElement("div");
-    controlWrapper.setAttribute("class", `control-wrapper item-${item.id}`);
-    const captionText = document.createElement("div");
-    captionText.setAttribute(
-      "class",
-      `caption-text item-${item.id} visibility`
+    BookLabel.createDOMElement(
+      "a",
+      {
+        parentEl: urlWrapper,
+        className: "item-url",
+        innerText: item.title,
+      },
+      { href: item.url, target: "_blank" }
     );
-    captionText.innerText = "Click to select/remove the label";
-    controlWrapper.appendChild(captionText);
-    controlWrapper.appendChild(addLabelButton);
 
-    chrome.storage.sync.get(["app"], function (result) {
-      const {
-        app: { labels, urls },
-      } = result;
+    BookLabel.getStorage((result) => {
+      const { labels, urls } = result;
       const currentLabel = urls[item.url];
       drawColorItem(labels, labelWrapper, item, currentLabel);
 
@@ -385,25 +387,6 @@ function createBookmarkItem(items) {
         drawColorItem({ [currentLabel]: currentLabel }, currentlabelItem);
       }
     });
-
-    const anchor = document.createElement("a");
-    const favIcon = document.createElement("img");
-
-    anchor.href = item.url;
-    anchor.target = "_blank";
-    anchor.setAttribute("class", "item-url");
-    anchor.innerText = item.title;
-
-    wrapper.setAttribute("class", "items-wrapper");
-    favIcon.src = `http://www.google.com/s2/favicons?domain=${item.url}`;
-
-    urlWrapper.appendChild(favIcon);
-    urlWrapper.appendChild(anchor);
-    wrapper.appendChild(urlWrapper);
-    wrapper.appendChild(labelWrapper);
-    wrapper.appendChild(currentLabelWrapper);
-    wrapper.appendChild(controlWrapper);
-    itemList.appendChild(wrapper);
   }
 }
 
@@ -417,16 +400,22 @@ function drawColorItem(
   const labelNames = Object.keys(labels);
 
   if (labelNames.length === 0) {
-    const noneLabel = document.createElement("div");
-    noneLabel.innerText = "None of labels";
-    noneLabel.setAttribute("style", "text-align:center;width:100%");
-    container.appendChild(noneLabel);
+    BookLabel.createDOMElement("div", {
+      style: "text-align:center;width:100%",
+      innerText: "None of labels",
+      parentEl: container,
+    });
     return;
   }
 
   labelNames.forEach((labelName) => {
-    const [l, c] = destructuringLabelName(labelName);
-    const coloredItem = document.createElement("div");
+    const [l, c] = BookLabel.destructuringLabelName(labelName);
+    const coloredItem = BookLabel.createDOMElement("div", {
+      style: `background-color: ${c}`,
+      innerText: l,
+      parentEl: container,
+    });
+
     let isSelectedLabel = false;
 
     if (currentLabel.length) {
@@ -436,9 +425,7 @@ function drawColorItem(
         currentLabel && currentLabel === labelName ? "selected" : "";
     }
 
-    coloredItem.setAttribute("style", `background-color: ${c}`);
     coloredItem.setAttribute("class", `color-item ${isSelectedLabel}`);
-    coloredItem.innerText = l;
 
     if (onItemClick) {
       coloredItem.onclick = () => {
@@ -446,6 +433,7 @@ function drawColorItem(
       };
     } else {
       if (item) {
+        // addLabelToURL
         coloredItem.onclick = function () {
           addLabelToURL(item, labelName);
           toggleCreatingLabel(item.id);
@@ -459,51 +447,38 @@ function drawColorItem(
       }
     }
 
-    const removeBtn = document.createElement("button");
-    removeBtn.onclick = function () {
-      chrome.storage.sync.get(["app"], function (result) {
-        let {
-          app: { labels, boardSelectedLabels },
-          app,
-        } = result;
-        delete labels[labelName];
-        const updatedBoardSelectedLabels = boardSelectedLabels.filter(
-          (l) => l !== labelName
-        );
-
-        chrome.storage.sync.set(
-          {
-            app: {
-              ...app,
+    BookLabel.createDOMElement("button", {
+      className: "reset-button remove-label-button",
+      innerText: "x",
+      parentEl: coloredItem,
+      onClick: () => {
+        BookLabel.getStorage((result) => {
+          let { labels, boardSelectedLabels } = result;
+          delete labels[labelName];
+          const updatedBoardSelectedLabels = boardSelectedLabels.filter(
+            (l) => l !== labelName
+          );
+          BookLabel.setStorage(
+            {
               labels,
               boardSelectedLabels: updatedBoardSelectedLabels,
             },
-          },
-          function () {
-            colorsContainer.textContent = "";
-            drawColorItem(labels);
-            drawBoard();
-            const { id } = historyDir[historyDir.length - 1] || {};
-            drawBookmarkLayout(id);
-          }
-        );
-      });
-    };
-    removeBtn.setAttribute("class", "reset-button remove-label-button");
-    removeBtn.innerText = "x";
-
-    coloredItem.appendChild(removeBtn);
-    container.appendChild(coloredItem);
+            () => {
+              colorsContainer.textContent = "";
+              drawColorItem(labels);
+              drawBoard();
+              drawCurrentBookmarkLayout();
+            }
+          );
+        });
+      },
+    });
   });
 }
 
 function addLabelToURL(item, labelName) {
-  chrome.storage.sync.get(["app"], function (result) {
-    let {
-      app: { urls, labels },
-      app,
-    } = result;
-
+  BookLabel.getStorage((result) => {
+    let { urls, labels } = result;
     let updatedLabel = {};
     const currentDir = historyDir[historyDir.length - 1] || {};
     // remove label
@@ -529,22 +504,13 @@ function addLabelToURL(item, labelName) {
       };
     }
 
-    chrome.storage.sync.set(
-      {
-        app: { ...app, urls, labels: updatedLabel },
-      },
-      function () {
-        const currentItemID = currentDir.id || "0";
-        drawBookmarkLayout(currentItemID);
-      }
-    );
+    BookLabel.setStorage({ urls, labels: updatedLabel }, () => {
+      drawCurrentBookmarkLayout();
+    });
   });
 }
 
-function formatLabelName(label, color) {
-  return `${label}|${color}`;
-}
-
-function destructuringLabelName(name) {
-  return name.split("|");
+function drawCurrentBookmarkLayout() {
+  const { id } = historyDir[historyDir.length - 1] || {};
+  drawBookmarkLayout(id);
 }
