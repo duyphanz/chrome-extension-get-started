@@ -414,8 +414,6 @@ function createBookmarkItem(items) {
         drawColorItem({ [currentLabel]: currentLabel }, currentlabelItem);
       }
     });
-
-  
   }
 }
 
@@ -429,16 +427,22 @@ function drawColorItem(
   const labelNames = Object.keys(labels);
 
   if (labelNames.length === 0) {
-    const noneLabel = document.createElement("div");
-    noneLabel.innerText = "None of labels";
-    noneLabel.setAttribute("style", "text-align:center;width:100%");
-    container.appendChild(noneLabel);
+    BookLabel.createDOMElement("div", {
+      style: "text-align:center;width:100%",
+      innerText: "None of labels",
+      parentEl: container,
+    });
     return;
   }
 
   labelNames.forEach((labelName) => {
     const [l, c] = BookLabel.destructuringLabelName(labelName);
-    const coloredItem = document.createElement("div");
+    const coloredItem = BookLabel.createDOMElement("div", {
+      style: `background-color: ${c}`,
+      innerText: l,
+      parentEl: container,
+    });
+
     let isSelectedLabel = false;
 
     if (currentLabel.length) {
@@ -448,9 +452,7 @@ function drawColorItem(
         currentLabel && currentLabel === labelName ? "selected" : "";
     }
 
-    coloredItem.setAttribute("style", `background-color: ${c}`);
     coloredItem.setAttribute("class", `color-item ${isSelectedLabel}`);
-    coloredItem.innerText = l;
 
     if (onItemClick) {
       coloredItem.onclick = () => {
@@ -458,6 +460,7 @@ function drawColorItem(
       };
     } else {
       if (item) {
+        // addLabelToURL
         coloredItem.onclick = function () {
           addLabelToURL(item, labelName);
           toggleCreatingLabel(item.id);
@@ -471,41 +474,40 @@ function drawColorItem(
       }
     }
 
-    const removeBtn = document.createElement("button");
-    removeBtn.onclick = function () {
-      chrome.storage.sync.get(["app"], function (result) {
-        let {
-          app: { labels, boardSelectedLabels },
-          app,
-        } = result;
-        delete labels[labelName];
-        const updatedBoardSelectedLabels = boardSelectedLabels.filter(
-          (l) => l !== labelName
-        );
+    BookLabel.createDOMElement("button", {
+      className: "reset-button remove-label-button",
+      innerText: "x",
+      parentEl: coloredItem,
+      onClick: () => {
+        chrome.storage.sync.get(["app"], function (result) {
+          let {
+            app: { labels, boardSelectedLabels },
+            app,
+          } = result;
+          delete labels[labelName];
+          const updatedBoardSelectedLabels = boardSelectedLabels.filter(
+            (l) => l !== labelName
+          );
 
-        chrome.storage.sync.set(
-          {
-            app: {
-              ...app,
-              labels,
-              boardSelectedLabels: updatedBoardSelectedLabels,
+          chrome.storage.sync.set(
+            {
+              app: {
+                ...app,
+                labels,
+                boardSelectedLabels: updatedBoardSelectedLabels,
+              },
             },
-          },
-          function () {
-            colorsContainer.textContent = "";
-            drawColorItem(labels);
-            drawBoard();
-            const { id } = historyDir[historyDir.length - 1] || {};
-            drawBookmarkLayout(id);
-          }
-        );
-      });
-    };
-    removeBtn.setAttribute("class", "reset-button remove-label-button");
-    removeBtn.innerText = "x";
-
-    coloredItem.appendChild(removeBtn);
-    container.appendChild(coloredItem);
+            function () {
+              colorsContainer.textContent = "";
+              drawColorItem(labels);
+              drawBoard();
+              const { id } = historyDir[historyDir.length - 1] || {};
+              drawBookmarkLayout(id);
+            }
+          );
+        });
+      },
+    });
   });
 }
 

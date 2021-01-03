@@ -10,7 +10,7 @@ function createDOMElement(name, options, props = {}) {
   const { className, style, innerText, onClick, parentEl } = options;
   const el = document.createElement(name);
 
-  el.setAttribute("class", className);
+  if (className) el.setAttribute("class", className);
   if (style) el.setAttribute("style", style);
   if (innerText) el.innerText = innerText;
   if (onClick) el.onclick = onClick;
@@ -18,9 +18,9 @@ function createDOMElement(name, options, props = {}) {
     parentEl.appendChild(el);
   }
 
-  Object.keys(props).forEach(p => {
+  Object.keys(props).forEach((p) => {
     el[p] = props[p];
-  })
+  });
 
   return el;
 }
