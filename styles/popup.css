@@ -1,43 +1,4 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: content-box;
-}
-
-main {
-  width: 600px;
-  height: 400px;
-  padding: 30px 30px 15px;
-  position: relative;
-  background-color: #efefef61;
-}
-
-header {
-  padding: 20px 30px;
-  display: flex;
-  border-bottom: #eaeaea 1px solid;
-}
-
-.reset-button {
-  border: 0;
-  outline: none;
-  cursor: pointer;
-  background-color: transparent;
-}
-
-.hidden {
-  display: none !important;
-}
-
-.visibility {
-  visibility: hidden;
-}
-
-.red-outline {
-  outline: red solid 1px;
-}
-
-/* header */
+/* header buttons */
 .go-back-btn:before {
   content: "\2190\0020";
 }
@@ -45,15 +6,7 @@ header {
 .go-to-board-btn:after {
   content: " \2192";
 }
-/* end header */
-
-/* footer */
-footer {
-  padding: 10px 30px;
-  display: flex;
-  justify-content: space-between;
-}
-/* end footer */
+/* end header buttons */
 
 /* bookmark content */
 .bookmark-container {
@@ -184,10 +137,6 @@ footer {
 
   display: flex;
   justify-content: space-between;
-}
-
-.create-label-form {
-  padding: 20px 20px 10px;
 }
 
 .colors-container {

@@ -1,0 +1,44 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: content-box;
+}
+
+main {
+  width: 600px;
+  height: 400px;
+  padding: 30px 30px 15px;
+  position: relative;
+  background-color: #efefef61;
+}
+
+header {
+  padding: 20px 30px;
+  display: flex;
+  border-bottom: #eaeaea 1px solid;
+}
+
+footer {
+  padding: 10px 30px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.visibility {
+  visibility: hidden;
+}
+
+.red-outline {
+  outline: red solid 1px;
+}
+
+.reset-button {
+  border: 0;
+  outline: none;
+  cursor: pointer;
+  background-color: transparent;
+}
