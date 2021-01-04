@@ -44,7 +44,7 @@ closeQuickAddLabel.addEventListener("click", () =>
 
 // init storage
 BookLabel.getStorage((result) => {
-  if (Object.keys(result).length === 0) {
+  if (!result.app || Object.keys(result).length === 0) {
     BookLabel.setStorage({ labels: {}, urls: {}, boardSelectedLabels: [] });
     return;
   }
@@ -54,10 +54,8 @@ BookLabel.getStorage((result) => {
   drawColorItem(labels, colorsContainer);
 });
 
-//START: draw bookmark tree
+// START HERE:
 drawBookmarkLayout("0");
-
-//=====================================================================
 
 function createBookmarkTree(items) {
   bmTree.textContent = "";
@@ -453,15 +451,20 @@ function drawColorItem(
       parentEl: coloredItem,
       onClick: () => {
         BookLabel.getStorage((result) => {
-          let { labels, boardSelectedLabels } = result;
+          let { labels, boardSelectedLabels, urls } = result;
+
+          labels[labelName] && labels[labelName].forEach(urlObject => {
+            delete urls[urlObject.url]
+          })
           delete labels[labelName];
-          const updatedBoardSelectedLabels = boardSelectedLabels.filter(
+          boardSelectedLabels = boardSelectedLabels.filter(
             (l) => l !== labelName
           );
           BookLabel.setStorage(
             {
               labels,
-              boardSelectedLabels: updatedBoardSelectedLabels,
+              boardSelectedLabels,
+              urls
             },
             () => {
               colorsContainer.textContent = "";
