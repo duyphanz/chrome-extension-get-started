@@ -260,6 +260,10 @@
   font-size: 11px;
 }
 
+.create-label-button {
+  margin-left: auto;
+}
+
 .board-container {
   display: flex;
   flex-direction: column;

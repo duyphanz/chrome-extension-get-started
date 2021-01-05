@@ -39,7 +39,7 @@ closeCreateLabelModal.addEventListener("click", () =>
   labelContainer.classList.toggle("hidden")
 );
 closeQuickAddLabel.addEventListener("click", () =>
-  quickAddLabel.classList.toggle("visibility")
+  quickAddLabel.classList.toggle("hidden")
 );
 
 // init storage
@@ -142,7 +142,7 @@ function drawQuickAdd() {
             chrome.bookmarks.get(parentId, function (result) {
               const { title: dir } = result[0];
               addLabelToURL({ title, url, dir }, labelName);
-              quickAddLabel.classList.toggle("visibility");
+              quickAddLabel.classList.toggle("hidden");
             });
           }
 
@@ -154,7 +154,7 @@ function drawQuickAdd() {
               undefined,
               onQuickAdd
             );
-            quickAddLabel.classList.toggle("visibility");
+            quickAddLabel.classList.toggle("hidden");
             const urlTitle = document.querySelector(".quick-add-label-url");
             urlTitle.innerText = title;
           }
