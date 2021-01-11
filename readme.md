@@ -18,3 +18,7 @@ app {
   boardSelectedLabels: [label, ...]
 }
 ```
+
+### Preview
+
+https://chrome.google.com/webstore/detail/imempfkkfajbeelggfhndpfmiffiijcb
